@@ -68,6 +68,9 @@ LOCAL_APPS = [
     "apps.members",
     "apps.finances",
     "apps.mpesa",
+    "apps.projects",
+    "apps.events",
+    "apps.reports",
     # phase 4+: events, projects, reports, welfare, discipline,
     # communications, public_site
 ]

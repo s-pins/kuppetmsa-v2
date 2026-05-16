@@ -150,3 +150,25 @@ class TestExpenseStateMachine:
         )
         with pytest.raises(ValidationError):
             exp.full_clean()
+
+    def test_is_large_handles_string_amount(self, account, make_user):
+        """Regression: an in-memory Expense whose amount_kes is still a
+        str (set via shell / raw assignment, not yet field-coerced) must
+        not blow up is_large with a str>Decimal TypeError. Caught by the
+        Phase 4 live demo.
+        """
+        treas = make_user(ROLE_TREASURER)
+        chair = make_user(ROLE_CHAIRPERSON)
+        exp = Expense.objects.create(
+            bank_account=account,
+            amount_kes="75000.00",  # deliberately a str
+            description="string amount",
+            created_by=treas,
+        )
+        # Force the in-memory attribute back to a str to mimic a fresh,
+        # uncoerced instance, then exercise the threshold path.
+        exp.amount_kes = "75000.00"
+        assert exp.is_large is True
+        exp.approve(chair)  # must not raise
+        exp.refresh_from_db()
+        assert exp.status == ExpenseStatus.APPROVED

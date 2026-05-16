@@ -58,6 +58,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "bank_account",
+            "project",
             "amount_kes",
             "description",
             "status",

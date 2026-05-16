@@ -30,6 +30,9 @@ urlpatterns = [
     path("", include("apps.members.api_urls", namespace="members")),
     path("finances/", include("apps.finances.api_urls", namespace="finances")),
     path("mpesa/", include("apps.mpesa.api_urls", namespace="mpesa")),
+    path("", include("apps.projects.api_urls", namespace="projects")),
+    path("", include("apps.events.api_urls", namespace="events")),
+    path("", include("apps.reports.api_urls", namespace="reports")),
     # OpenAPI schema + UIs — all gated to officers.
     path("schema/", OfficerGatedSchemaView.as_view(), name="schema"),
     path("docs/", OfficerGatedSwaggerView.as_view(url_name="api_v1:schema"), name="swagger"),

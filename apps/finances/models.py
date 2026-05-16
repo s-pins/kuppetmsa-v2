@@ -122,9 +122,16 @@ class Expense(TimeStampedModel):
         on_delete=models.PROTECT,
         related_name="expenses",
     )
-    # NOTE: project FK is added in Phase 4 when the projects app lands
-    # (see docs/erd.md §2 cross-link). Kept out of Phase 2 so finances
-    # migrates as a self-contained unit.
+    # Added in Phase 4: nullable link to a project for budget-vs-actual
+    # (docs/erd.md §2 cross-link). SET_NULL so deleting a project does
+    # not destroy its financial history.
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.SET_NULL,
+        related_name="expenses",
+        null=True,
+        blank=True,
+    )
     amount_kes = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -171,7 +178,14 @@ class Expense(TimeStampedModel):
 
     @property
     def is_large(self) -> bool:
-        return self.amount_kes > Decimal(str(LARGE_EXPENSE_THRESHOLD_KES))
+        # amount_kes may still be a str on an in-memory instance that has
+        # not been through field coercion (e.g. set in a shell or raw
+        # assignment before save). Coerce defensively so threshold logic
+        # never depends on construction path.
+        amount = self.amount_kes
+        if not isinstance(amount, Decimal):
+            amount = Decimal(str(amount))
+        return amount > Decimal(str(LARGE_EXPENSE_THRESHOLD_KES))
 
     @property
     def requires_second_signatory(self) -> bool:
