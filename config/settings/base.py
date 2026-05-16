@@ -53,12 +53,17 @@ THIRD_PARTY_APPS = [
     'drf_spectacular',
     'django_filters',
     'corsheaders',
+    # allauth
+    'allauth',
+    'allauth.account',
+    'allauth.mfa',
 ]
 
 LOCAL_APPS = [
     'apps.core',
     'apps.accounts',
-    # phase 1+: members, finances, events, projects, reports, welfare, discipline,
+    'apps.members',
+    # phase 2+: finances, events, projects, reports, welfare, discipline,
     # communications, public_site, audits
 ]
 
@@ -78,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 # ---------------------------------------------------------------------------
@@ -124,9 +130,46 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LOGIN_URL = 'accounts:login'
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ---------------------------------------------------------------------------
+# allauth
+# ---------------------------------------------------------------------------
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Email is the login identifier; there is no username field on our User.
+# Both legacy and current setting names are set so this works across the
+# allauth 64.x line (the legacy AUTHENTICATION_METHOD/EMAIL_REQUIRED keys
+# are still read by 64.2.x; LOGIN_METHODS/SIGNUP_FIELDS by later patches).
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = False
+ACCOUNT_RATE_LIMITS = {
+    'login_failed': '5/5m',
+    'login': '30/5m',
+    'signup': '20/h',
+    'reset_password': '5/h',
+    'reset_password_from_key': '5/h',
+}
+ACCOUNT_ADAPTER = 'apps.accounts.adapter.AccountAdapter'
+
+# MFA (TOTP). Mandatory for finance & discipline roles is enforced at the
+# permission layer (is_2fa_enrolled), not by allauth itself.
+MFA_SUPPORTED_TYPES = ['totp', 'recovery_codes']
+MFA_TOTP_ISSUER = 'KUPPET Mombasa'
 
 # ---------------------------------------------------------------------------
 # Internationalization

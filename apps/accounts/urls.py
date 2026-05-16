@@ -1,15 +1,22 @@
 """Server-rendered URLs for the accounts app.
 
-Phase 0 ships the namespace and stubs only. Phase 1 wires up:
-    - login / logout (django-allauth)
-    - password reset
-    - 2FA enrollment
-    - reauth (named 'accounts:reauth' — referenced by RecentAuthRequiredMixin)
+Provides the `accounts:reauth` route referenced by RecentAuthRequiredMixin
+and DisciplineAccessMixin, then delegates login / logout / signup /
+email-verify / password-reset / MFA to allauth.
+
+Note: allauth's own URLs are NOT namespaced (they use names like
+`account_login`, `account_signup`). Only `reauth` lives under the
+`accounts:` namespace.
 """
-from django.urls import path
+from django.urls import include, path
+
+from apps.accounts.auth_views import ReauthView
 
 app_name = 'accounts'
 
-urlpatterns: list = [
-    # Reserved for phase 1.
+urlpatterns = [
+    path('reauth/', ReauthView.as_view(), name='reauth'),
 ]
+
+# allauth routes are included at the project level (see config/urls.py)
+# because they must remain un-namespaced for allauth's reverse() calls.

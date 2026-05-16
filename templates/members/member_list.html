@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<h1>Members</h1>
+
+<form method="get">
+  <input type="search" name="q" value="{{ request.GET.q }}" placeholder="Name, ID, school">
+  <select name="active">
+    <option value="">All</option>
+    <option value="1" {% if request.GET.active == "1" %}selected{% endif %}>Active</option>
+    <option value="0" {% if request.GET.active == "0" %}selected{% endif %}>Inactive</option>
+  </select>
+  <button type="submit">Search</button>
+</form>
+
+<table>
+  <thead>
+    <tr><th>ID</th><th>Name</th><th>School</th><th>Sub-county</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for m in members %}
+    <tr>
+      <td>{{ m.membership_id }}</td>
+      <td>{{ m.full_name }}</td>
+      <td>{{ m.school|default:"—" }}</td>
+      <td>{{ m.get_sub_county_display|default:"—" }}</td>
+      <td>{% if m.is_active %}Active{% else %}Inactive{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">No members found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if is_paginated %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}">Previous</a>
+  {% endif %}
+  <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}">Next</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

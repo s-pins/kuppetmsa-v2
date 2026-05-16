@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Confirm your identity{% endblock %}
+{% block content %}
+<div class="reauth">
+  <h1>Confirm your identity</h1>
+  <p>For security, please re-enter your password to continue.</p>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {{ form.as_p }}
+    <button type="submit">Continue</button>
+  </form>
+</div>
+{% endblock %}
