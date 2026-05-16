@@ -34,6 +34,7 @@ urlpatterns = [
     path("", include("apps.events.api_urls", namespace="events")),
     path("", include("apps.reports.api_urls", namespace="reports")),
     path("portal/", include("apps.portal.api_urls", namespace="portal")),
+    path("welfare/", include("apps.welfare.api_urls", namespace="welfare")),
     # OpenAPI schema + UIs — all gated to officers.
     path("schema/", OfficerGatedSchemaView.as_view(), name="schema"),
     path("docs/", OfficerGatedSwaggerView.as_view(url_name="api_v1:schema"), name="swagger"),

@@ -79,6 +79,12 @@ FINANCE_VIEW_ROLES = FINANCE_WRITE_ROLES | frozenset(
     }
 )
 
+# Welfare reviewers: any leadership role can review/approve claims.
+# The welfare_officer FLAG (checked separately) additively grants
+# non-leadership officers reviewer access — see docs/permissions.md §5.7,
+# which defines reviewer = (role in this set) OR (welfare_officer flag).
+WELFARE_REVIEWER_ROLES = LEADERSHIP_ROLES
+
 OFFICER_ROLES = frozenset(
     {
         ROLE_ADMIN,
