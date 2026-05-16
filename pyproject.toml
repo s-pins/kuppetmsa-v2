@@ -15,14 +15,23 @@ select = [
     "RUF", # ruff-specific
 ]
 ignore = [
-    "S101",  # use of assert (we use pytest)
-    "E501",  # line too long (handled by formatter)
+    "S101",   # use of assert (we use pytest)
+    "E501",   # line too long (handled by formatter)
+    # RUF012: Django/DRF convention is plain lists for Meta.fields,
+    # permission_classes, filter_backends, etc. Annotating every one with
+    # ClassVar is noise that fights the framework. Disabled project-wide.
+    "RUF012",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S105", "S106"]  # hardcoded passwords in tests are fine
-"**/test_*.py" = ["S105", "S106"]
-"**/settings/**" = ["F401", "F403"]  # star imports across settings are intentional
+# Tests: hardcoded test passwords and broad excepts in test scaffolding are fine.
+"**/tests/**" = ["S105", "S106", "S110", "BLE001"]
+"**/test_*.py" = ["S105", "S106", "S110", "BLE001"]
+# Settings deliberately use star imports and bind 0.0.0.0 in *development only*.
+"**/settings/*.py" = ["F401", "F403", "F405"]
+"**/settings/development.py" = ["F401", "F403", "F405", "S104"]
+# Management commands legitimately catch broad exceptions to report-and-continue.
+"**/management/commands/*.py" = ["BLE001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

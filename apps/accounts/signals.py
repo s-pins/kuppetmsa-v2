@@ -7,6 +7,7 @@ honest:
   - MFA challenge passed         -> stamp last_strong_auth_at
   - password changed/reset       -> stamp last_strong_auth_at
 """
+
 from __future__ import annotations
 
 from allauth.account.signals import password_changed, password_reset
@@ -30,10 +31,10 @@ def _on_authenticator_removed(sender, request, user, authenticator, **kwargs):
 @receiver(password_changed)
 def _on_password_changed(sender, request, user, **kwargs):
     user.last_strong_auth_at = timezone.now()
-    user.save(update_fields=['last_strong_auth_at'])
+    user.save(update_fields=["last_strong_auth_at"])
 
 
 @receiver(password_reset)
 def _on_password_reset(sender, request, user, **kwargs):
     user.last_strong_auth_at = timezone.now()
-    user.save(update_fields=['last_strong_auth_at'])
+    user.save(update_fields=["last_strong_auth_at"])

@@ -15,9 +15,8 @@ Two responsibilities:
 
 Usage: wired in config/settings/base.py under SPECTACULAR_SETTINGS.
 """
-from __future__ import annotations
 
-from typing import Any
+from __future__ import annotations
 
 from apps.core.constants import (
     DISCIPLINE_BASE_ROLES,
@@ -25,11 +24,11 @@ from apps.core.constants import (
 )
 
 # Paths that get stripped if the user is not a discipline-committee member.
-DISCIPLINE_PATH_PREFIXES = ('/api/v1/discipline/',)
+DISCIPLINE_PATH_PREFIXES = ("/api/v1/discipline/",)
 
 
 def _user_can_see_discipline(user) -> bool:
-    if not user or not getattr(user, 'is_authenticated', False):
+    if not user or not getattr(user, "is_authenticated", False):
         return False
     role_ok = user.role in DISCIPLINE_BASE_ROLES or bool(
         getattr(user, FLAG_DISCIPLINE_COMMITTEE, False)
@@ -37,7 +36,7 @@ def _user_can_see_discipline(user) -> bool:
     return role_ok
 
 
-def filter_schema_for_user(endpoints, **kwargs):  # noqa: ARG001
+def filter_schema_for_user(endpoints, **kwargs):
     """Preprocessing hook: drop sensitive endpoints from the schema.
 
     drf-spectacular preprocessing hooks receive a list of
@@ -51,8 +50,8 @@ def filter_schema_for_user(endpoints, **kwargs):  # noqa: ARG001
     # Lazy import to avoid Django-not-ready issues at module load.
     from drf_spectacular.drainage import get_override  # noqa: F401  (kept for parity)
 
-    request = kwargs.get('request')
-    user = getattr(request, 'user', None) if request is not None else None
+    request = kwargs.get("request")
+    user = getattr(request, "user", None) if request is not None else None
 
     if _user_can_see_discipline(user):
         return endpoints

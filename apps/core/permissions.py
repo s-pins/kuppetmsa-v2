@@ -15,10 +15,11 @@ Example:
         RecentAuthRequired
     ]
 """
+
 from __future__ import annotations
 
-from datetime import timedelta
-from typing import Iterable
+from collections.abc import Iterable
+from datetime import UTC, timedelta
 
 from django.utils import timezone
 from rest_framework import permissions
@@ -34,7 +35,7 @@ from apps.core.constants import (
 
 
 def _user_authenticated(request: Request) -> bool:
-    user = getattr(request, 'user', None)
+    user = getattr(request, "user", None)
     return bool(user and user.is_authenticated)
 
 
@@ -56,9 +57,9 @@ class HasAnyRole(permissions.BasePermission):
         # Caller is configuring at view-definition time: build a subclass.
         roles = frozenset(allowed_roles)
         subclass = type(
-            f'HasAnyRole_{"_".join(sorted(roles))[:60]}',
+            f"HasAnyRole_{'_'.join(sorted(roles))[:60]}",
             (cls,),
-            {'_allowed_roles': roles},
+            {"_allowed_roles": roles},
         )
         return subclass
 
@@ -77,13 +78,13 @@ class HasFlag(permissions.BasePermission):
         if flag_name is None:
             return super().__new__(cls)
         subclass = type(
-            f'HasFlag_{flag_name}',
+            f"HasFlag_{flag_name}",
             (cls,),
-            {'_flag_name': flag_name},
+            {"_flag_name": flag_name},
         )
         return subclass
 
-    _flag_name: str = ''
+    _flag_name: str = ""
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not _user_authenticated(request):
@@ -97,12 +98,12 @@ class Is2FAEnrolled(permissions.BasePermission):
     Required for finance writes and the entire discipline module.
     """
 
-    message = '2FA enrollment is required for this action.'
+    message = "2FA enrollment is required for this action."
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not _user_authenticated(request):
             return False
-        return bool(getattr(request.user, 'is_2fa_enrolled', False))
+        return bool(getattr(request.user, "is_2fa_enrolled", False))
 
 
 class RecentAuthRequired(permissions.BasePermission):
@@ -117,7 +118,7 @@ class RecentAuthRequired(permissions.BasePermission):
     satisfy the requirement without a separate re-auth step.
     """
 
-    message = 'Recent authentication is required. Please re-enter your password.'
+    message = "Recent authentication is required. Please re-enter your password."
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not _user_authenticated(request):
@@ -125,17 +126,18 @@ class RecentAuthRequired(permissions.BasePermission):
 
         cutoff = timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS)
 
-        last = getattr(request.user, 'last_strong_auth_at', None)
+        last = getattr(request.user, "last_strong_auth_at", None)
         if last and last >= cutoff:
             return True
 
         # Fall back to JWT iat if present.
-        auth = getattr(request, 'auth', None)
+        auth = getattr(request, "auth", None)
         if auth is not None:
-            iat = getattr(auth, 'payload', {}).get('iat') if hasattr(auth, 'payload') else None
+            iat = getattr(auth, "payload", {}).get("iat") if hasattr(auth, "payload") else None
             if iat:
-                from datetime import datetime, timezone as dt_tz
-                token_issued_at = datetime.fromtimestamp(iat, tz=dt_tz.utc)
+                from datetime import datetime
+
+                token_issued_at = datetime.fromtimestamp(iat, tz=UTC)
                 if token_issued_at >= cutoff:
                     return True
 
@@ -149,13 +151,13 @@ class IsObjectOwner(permissions.BasePermission):
     object that resolves to a User instance.
     """
 
-    owner_attr = 'user'
+    owner_attr = "user"
 
     def has_object_permission(self, request: Request, view: APIView, obj) -> bool:
         if not _user_authenticated(request):
             return False
         owner = obj
-        for part in self.owner_attr.split('.'):
+        for part in self.owner_attr.split("."):
             owner = getattr(owner, part, None)
             if owner is None:
                 return False
@@ -175,7 +177,7 @@ class IsDisciplineCommittee(permissions.BasePermission):
     endpoint's existence to unauthorized callers.
     """
 
-    message = 'Not found.'  # See above — we mask as 404 at the view layer.
+    message = "Not found."  # See above — we mask as 404 at the view layer.
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not _user_authenticated(request):
@@ -187,21 +189,22 @@ class IsDisciplineCommittee(permissions.BasePermission):
         )
         if not role_ok:
             return False
-        if not getattr(user, 'is_2fa_enrolled', False):
+        if not getattr(user, "is_2fa_enrolled", False):
             return False
 
         # Inline RecentAuthRequired check to avoid permission-class composition cost.
         cutoff = timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS)
-        last = getattr(user, 'last_strong_auth_at', None)
+        last = getattr(user, "last_strong_auth_at", None)
         if last and last >= cutoff:
             return True
 
-        auth = getattr(request, 'auth', None)
-        if auth is not None and hasattr(auth, 'payload'):
-            iat = auth.payload.get('iat')
+        auth = getattr(request, "auth", None)
+        if auth is not None and hasattr(auth, "payload"):
+            iat = auth.payload.get("iat")
             if iat:
-                from datetime import datetime, timezone as dt_tz
-                if datetime.fromtimestamp(iat, tz=dt_tz.utc) >= cutoff:
+                from datetime import datetime
+
+                if datetime.fromtimestamp(iat, tz=UTC) >= cutoff:
                     return True
 
         return False

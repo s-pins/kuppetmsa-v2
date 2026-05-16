@@ -5,6 +5,7 @@ change either the matrix or these tests, change both in the same commit.
 
 Run: `pytest apps/core/tests/test_permissions.py`
 """
+
 from datetime import timedelta
 
 import pytest
@@ -33,13 +34,13 @@ from apps.core.permissions import (
     RecentAuthRequired,
 )
 
-
 pytestmark = pytest.mark.django_db
 
 
 # ---------------------------------------------------------------------------
 # Test fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def factory():
@@ -50,20 +51,20 @@ def factory():
 def make_user(django_user_model):
     """Build users with arbitrary role + flag combinations."""
 
-    counter = {'n': 0}
+    counter = {"n": 0}
 
     def _make(role=ROLE_MEMBER, *, recent_auth=True, two_fa=False, **flags):
-        counter['n'] += 1
+        counter["n"] += 1
         user = django_user_model.objects.create_user(
-            email=f'{role}-{counter["n"]}@example.com',
-            password='supersecret-test-pass-1234',
+            email=f"{role}-{counter['n']}@example.com",
+            password="supersecret-test-pass-1234",
             role=role,
             is_2fa_enrolled=two_fa,
             **flags,
         )
         if recent_auth:
             user.last_strong_auth_at = timezone.now()
-            user.save(update_fields=['last_strong_auth_at'])
+            user.save(update_fields=["last_strong_auth_at"])
         return user
 
     return _make
@@ -71,11 +72,12 @@ def make_user(django_user_model):
 
 class _DummyView(APIView):
     """Bare view used as the `view` parameter to permission checks."""
+
     pass
 
 
 def _request_for(factory, user):
-    req = factory.get('/test/')
+    req = factory.get("/test/")
     if user is not None:
         force_authenticate(req, user=user)
         # APIRequestFactory doesn't run middleware; populate request.user.
@@ -86,6 +88,7 @@ def _request_for(factory, user):
 # ---------------------------------------------------------------------------
 # HasAnyRole
 # ---------------------------------------------------------------------------
+
 
 class TestHasAnyRole:
     def test_permits_user_in_allowed_set(self, factory, make_user):
@@ -100,8 +103,8 @@ class TestHasAnyRole:
 
     def test_denies_anonymous(self, factory):
         Perm = HasAnyRole(LEADERSHIP_ROLES)
-        req = factory.get('/')
-        req.user = type('AnonUser', (), {'is_authenticated': False})()
+        req = factory.get("/")
+        req.user = type("AnonUser", (), {"is_authenticated": False})()
         assert not Perm().has_permission(req, _DummyView())
 
     def test_treasurer_excluded_from_leadership(self, factory, make_user):
@@ -119,6 +122,7 @@ class TestHasAnyRole:
 # HasFlag
 # ---------------------------------------------------------------------------
 
+
 class TestHasFlag:
     def test_permits_user_with_flag(self, factory, make_user):
         Perm = HasFlag(FLAG_DISCIPLINE_COMMITTEE)
@@ -135,6 +139,7 @@ class TestHasFlag:
 # Is2FAEnrolled
 # ---------------------------------------------------------------------------
 
+
 class TestIs2FAEnrolled:
     def test_permits_enrolled(self, factory, make_user):
         user = make_user(role=ROLE_TREASURER, two_fa=True)
@@ -149,6 +154,7 @@ class TestIs2FAEnrolled:
 # RecentAuthRequired
 # ---------------------------------------------------------------------------
 
+
 class TestRecentAuthRequired:
     def test_permits_within_window(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, recent_auth=True)
@@ -157,33 +163,28 @@ class TestRecentAuthRequired:
     def test_denies_outside_window(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, recent_auth=False)
         # Set last_strong_auth_at to *just* outside the window.
-        user.last_strong_auth_at = (
-            timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS + 60)
+        user.last_strong_auth_at = timezone.now() - timedelta(
+            seconds=RECENT_AUTH_WINDOW_SECONDS + 60
         )
-        user.save(update_fields=['last_strong_auth_at'])
-        assert not RecentAuthRequired().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        user.save(update_fields=["last_strong_auth_at"])
+        assert not RecentAuthRequired().has_permission(_request_for(factory, user), _DummyView())
 
     def test_denies_never_authed(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, recent_auth=False)
         user.last_strong_auth_at = None
-        user.save(update_fields=['last_strong_auth_at'])
-        assert not RecentAuthRequired().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        user.save(update_fields=["last_strong_auth_at"])
+        assert not RecentAuthRequired().has_permission(_request_for(factory, user), _DummyView())
 
 
 # ---------------------------------------------------------------------------
 # IsDisciplineCommittee — the composite check that gates the whole module
 # ---------------------------------------------------------------------------
 
+
 class TestIsDisciplineCommittee:
     def test_chairperson_with_2fa_and_recent_auth_allowed(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, two_fa=True, recent_auth=True)
-        assert IsDisciplineCommittee().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        assert IsDisciplineCommittee().has_permission(_request_for(factory, user), _DummyView())
 
     def test_member_with_flag_and_2fa_allowed(self, factory, make_user):
         user = make_user(
@@ -192,38 +193,31 @@ class TestIsDisciplineCommittee:
             two_fa=True,
             recent_auth=True,
         )
-        assert IsDisciplineCommittee().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        assert IsDisciplineCommittee().has_permission(_request_for(factory, user), _DummyView())
 
     def test_chairperson_without_2fa_denied(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, two_fa=False, recent_auth=True)
-        assert not IsDisciplineCommittee().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        assert not IsDisciplineCommittee().has_permission(_request_for(factory, user), _DummyView())
 
     def test_treasurer_denied_even_with_2fa(self, factory, make_user):
         """Treasurer is in finance roles but explicitly NOT in DISCIPLINE_BASE_ROLES."""
         user = make_user(role=ROLE_TREASURER, two_fa=True, recent_auth=True)
         assert ROLE_TREASURER not in DISCIPLINE_BASE_ROLES  # safety net
-        assert not IsDisciplineCommittee().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        assert not IsDisciplineCommittee().has_permission(_request_for(factory, user), _DummyView())
 
     def test_stale_auth_denied_even_with_role(self, factory, make_user):
         user = make_user(role=ROLE_CHAIRPERSON, two_fa=True, recent_auth=False)
-        user.last_strong_auth_at = (
-            timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS + 60)
+        user.last_strong_auth_at = timezone.now() - timedelta(
+            seconds=RECENT_AUTH_WINDOW_SECONDS + 60
         )
-        user.save(update_fields=['last_strong_auth_at'])
-        assert not IsDisciplineCommittee().has_permission(
-            _request_for(factory, user), _DummyView()
-        )
+        user.save(update_fields=["last_strong_auth_at"])
+        assert not IsDisciplineCommittee().has_permission(_request_for(factory, user), _DummyView())
 
 
 # ---------------------------------------------------------------------------
 # IsOfficer — gates Swagger UI
 # ---------------------------------------------------------------------------
+
 
 class TestIsOfficer:
     def test_chairperson_is_officer(self, factory, make_user):
@@ -251,6 +245,7 @@ class TestIsOfficer:
 # IsObjectOwner
 # ---------------------------------------------------------------------------
 
+
 class TestIsObjectOwner:
     def test_owner_attr_dotted_traversal(self, factory, make_user):
         owner = make_user(role=ROLE_MEMBER)
@@ -259,6 +254,7 @@ class TestIsObjectOwner:
         class Wrapper:
             class _Holder:
                 pass
+
             user = None
 
         obj = Wrapper()

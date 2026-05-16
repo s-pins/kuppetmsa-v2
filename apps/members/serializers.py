@@ -6,6 +6,7 @@ Three serializers map to three rows of docs/permissions.md §5.2:
   - MemberSerializer        : full record, officers/leadership
   - MemberSelfSerializer    : safe-field self-edit (member editing own profile)
 """
+
 from rest_framework import serializers
 
 from apps.members.models import Member
@@ -18,7 +19,7 @@ class PublicMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Member
-        fields = ['id', 'full_name', 'school', 'sub_county']
+        fields = ["id", "full_name", "school", "sub_county"]
         read_only_fields = fields
 
 
@@ -30,25 +31,25 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = [
-            'id',
-            'membership_id',
-            'tsc_number',
-            'first_name',
-            'last_name',
-            'full_name',
-            'phone',
-            'email',
-            'school',
-            'sub_county',
-            'ward',
-            'bio',
-            'photo',
-            'is_active',
-            'joined_on',
-            'created_at',
-            'updated_at',
+            "id",
+            "membership_id",
+            "tsc_number",
+            "first_name",
+            "last_name",
+            "full_name",
+            "phone",
+            "email",
+            "school",
+            "sub_county",
+            "ward",
+            "bio",
+            "photo",
+            "is_active",
+            "joined_on",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ['membership_id', 'created_at', 'updated_at']
+        read_only_fields = ["membership_id", "created_at", "updated_at"]
 
 
 class MemberSelfSerializer(serializers.ModelSerializer):
@@ -63,15 +64,15 @@ class MemberSelfSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = [
-            'id',
-            'membership_id',
-            'full_name',
-            'phone',
-            'email',
-            'bio',
-            'photo',
-            'school',
-            'sub_county',
-            'ward',
+            "id",
+            "membership_id",
+            "full_name",
+            "phone",
+            "email",
+            "bio",
+            "photo",
+            "school",
+            "sub_county",
+            "ward",
         ]
-        read_only_fields = ['id', 'membership_id', 'full_name']
+        read_only_fields = ["id", "membership_id", "full_name"]

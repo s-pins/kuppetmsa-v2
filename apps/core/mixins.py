@@ -7,10 +7,11 @@ surfaces (DRF + Django views).
 
 For function-based views, see apps.core.decorators.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import timedelta
-from typing import Iterable
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -42,20 +43,20 @@ class RoleRequiredMixin(LoginRequiredMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         if request.user.role not in self.allowed_roles:
-            raise PermissionDenied('Your role does not have access to this page.')
+            raise PermissionDenied("Your role does not have access to this page.")
         return super().dispatch(request, *args, **kwargs)
 
 
 class FlagRequiredMixin(LoginRequiredMixin):
     """Require a boolean flag on the user."""
 
-    required_flag: str = ''
+    required_flag: str = ""
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         if not getattr(request.user, self.required_flag, False):
-            raise PermissionDenied('You do not have this capability enabled.')
+            raise PermissionDenied("You do not have this capability enabled.")
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -65,8 +66,8 @@ class TwoFactorRequiredMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
-        if not getattr(request.user, 'is_2fa_enrolled', False):
-            raise PermissionDenied('2FA enrollment is required for this section.')
+        if not getattr(request.user, "is_2fa_enrolled", False):
+            raise PermissionDenied("2FA enrollment is required for this section.")
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -79,17 +80,18 @@ class RecentAuthRequiredMixin(LoginRequiredMixin):
     accounts/urls.py.)
     """
 
-    reauth_url_name = 'accounts:reauth'
+    reauth_url_name = "accounts:reauth"
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
 
         cutoff = timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS)
-        last = getattr(request.user, 'last_strong_auth_at', None)
+        last = getattr(request.user, "last_strong_auth_at", None)
         if last is None or last < cutoff:
             from django.shortcuts import redirect
             from django.urls import reverse
+
             return redirect(f"{reverse(self.reauth_url_name)}?next={request.path}")
 
         return super().dispatch(request, *args, **kwargs)
@@ -119,20 +121,24 @@ class DisciplineAccessMixin(LoginRequiredMixin):
         if not role_ok:
             raise Http404()
 
-        if not getattr(user, 'is_2fa_enrolled', False):
+        if not getattr(user, "is_2fa_enrolled", False):
             raise Http404()
 
         cutoff = timezone.now() - timedelta(seconds=RECENT_AUTH_WINDOW_SECONDS)
-        last = getattr(user, 'last_strong_auth_at', None)
+        last = getattr(user, "last_strong_auth_at", None)
         if last is None or last < cutoff:
             # Authorized in principle but session is stale — redirect to reauth
             # rather than 404, since the user already has the role.
             from django.shortcuts import redirect
             from django.urls import reverse
+
             try:
-                target = reverse('accounts:reauth')
+                target = reverse("accounts:reauth")
                 return redirect(f"{target}?next={request.path}")
             except Exception:
-                raise Http404()
+                # reauth URL not wired — fall back to a clean 404 rather
+                # than leaking the reverse() failure. Suppression is
+                # intentional, hence `from None`.
+                raise Http404() from None
 
         return super().dispatch(request, *args, **kwargs)

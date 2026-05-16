@@ -10,6 +10,7 @@ permission classes rely on:
 Without this bridge, RecentAuthRequired / IsDisciplineCommittee would never
 see a fresh timestamp and would lock everyone out.
 """
+
 from __future__ import annotations
 
 from allauth.account.adapter import DefaultAccountAdapter
@@ -24,7 +25,7 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def _stamp_strong_auth(self, user) -> None:
         user.last_strong_auth_at = timezone.now()
-        user.save(update_fields=['last_strong_auth_at'])
+        user.save(update_fields=["last_strong_auth_at"])
 
     @staticmethod
     def refresh_mfa_flag(user) -> None:
@@ -41,4 +42,4 @@ class AccountAdapter(DefaultAccountAdapter):
         ).exists()
         if user.is_2fa_enrolled != has_totp:
             user.is_2fa_enrolled = has_totp
-            user.save(update_fields=['is_2fa_enrolled'])
+            user.save(update_fields=["is_2fa_enrolled"])

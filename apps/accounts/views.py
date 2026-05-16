@@ -1,4 +1,5 @@
 """Account views: gated docs views and the /me self-service endpoint."""
+
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -12,16 +13,19 @@ from apps.core.permissions import IsOfficer
 
 class OfficerGatedSchemaView(SpectacularAPIView):
     """The raw OpenAPI schema. Officers only."""
+
     permission_classes = [permissions.IsAuthenticated, IsOfficer]
 
 
 class OfficerGatedSwaggerView(SpectacularSwaggerView):
     """Swagger UI. Officers only."""
+
     permission_classes = [permissions.IsAuthenticated, IsOfficer]
 
 
 class OfficerGatedRedocView(SpectacularRedocView):
     """Redoc UI. Officers only."""
+
     permission_classes = [permissions.IsAuthenticated, IsOfficer]
 
 
@@ -31,6 +35,7 @@ class MeView(generics.RetrieveUpdateAPIView):
     Returns the authenticated user's record. Used by the web/mobile clients
     to hydrate session state.
     """
+
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 

@@ -8,14 +8,15 @@ Note: allauth's own URLs are NOT namespaced (they use names like
 `account_login`, `account_signup`). Only `reauth` lives under the
 `accounts:` namespace.
 """
-from django.urls import include, path
+
+from django.urls import path
 
 from apps.accounts.auth_views import ReauthView
 
-app_name = 'accounts'
+app_name = "accounts"
 
 urlpatterns = [
-    path('reauth/', ReauthView.as_view(), name='reauth'),
+    path("reauth/", ReauthView.as_view(), name="reauth"),
 ]
 
 # allauth routes are included at the project level (see config/urls.py)
