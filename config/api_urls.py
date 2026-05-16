@@ -35,6 +35,13 @@ urlpatterns = [
     path("", include("apps.reports.api_urls", namespace="reports")),
     path("portal/", include("apps.portal.api_urls", namespace="portal")),
     path("welfare/", include("apps.welfare.api_urls", namespace="welfare")),
+    # Mounted at exactly /api/v1/discipline/ so the Phase 0 schema hook
+    # (apps.core.schema.DISCIPLINE_PATH_PREFIXES) strips these endpoints
+    # from the OpenAPI schema for anyone without committee access.
+    path(
+        "discipline/",
+        include("apps.discipline.api_urls", namespace="discipline"),
+    ),
     # OpenAPI schema + UIs — all gated to officers.
     path("schema/", OfficerGatedSchemaView.as_view(), name="schema"),
     path("docs/", OfficerGatedSwaggerView.as_view(url_name="api_v1:schema"), name="swagger"),

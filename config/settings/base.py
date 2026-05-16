@@ -35,6 +35,18 @@ DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", default="", cast=Csv())
 
 # ---------------------------------------------------------------------------
+# Field-level encryption key (disciplinary records — Phase 7).
+#
+# DELIBERATELY SEPARATE from SECRET_KEY. SECRET_KEY rotation is routine
+# security hygiene; if django-cryptography keyed off it, every rotation
+# would render existing encrypted disciplinary notes permanently
+# unreadable. This key must be set explicitly in prod, backed up
+# securely, and NEVER rotated without a re-encryption migration.
+# Losing it means losing the disciplinary records forever.
+# ---------------------------------------------------------------------------
+CRYPTOGRAPHY_KEY = config("DJANGO_FIELD_ENCRYPTION_KEY", default=SECRET_KEY)
+
+# ---------------------------------------------------------------------------
 # Apps
 # ---------------------------------------------------------------------------
 
@@ -73,6 +85,7 @@ LOCAL_APPS = [
     "apps.reports",
     "apps.portal",
     "apps.welfare",
+    "apps.discipline",
     # phase 4+: events, projects, reports, welfare, discipline,
     # communications, public_site
 ]
