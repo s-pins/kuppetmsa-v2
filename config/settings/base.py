@@ -58,14 +58,17 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.mfa",
+    # audit trail (mandatory for finance per docs/PLAN.md)
+    "auditlog",
 ]
 
 LOCAL_APPS = [
     "apps.core",
     "apps.accounts",
     "apps.members",
-    # phase 2+: finances, events, projects, reports, welfare, discipline,
-    # communications, public_site, audits
+    "apps.finances",
+    # phase 4+: events, projects, reports, welfare, discipline,
+    # communications, public_site
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -85,6 +88,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # Captures the acting user for audit-log entries. Must come after
+    # AuthenticationMiddleware.
+    "auditlog.middleware.AuditlogMiddleware",
 ]
 
 # ---------------------------------------------------------------------------
