@@ -16,6 +16,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             "body",
             "audience_scope",
             "audience_sub_county",
+            "is_public",
             "status",
             "created_by",
             "created_by_email",

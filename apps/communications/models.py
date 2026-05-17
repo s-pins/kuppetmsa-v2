@@ -59,6 +59,14 @@ class Announcement(TimeStampedModel):
         choices=AnnouncementStatus.choices,
         default=AnnouncementStatus.DRAFT,
     )
+    # Opt-in public visibility. Default False is deliberate: an
+    # announcement's audience_scope targets MEMBERS (all/active/
+    # sub-county) — none of those imply "show this to the world".
+    # Phase 9's public news endpoint shows ONLY announcements where a
+    # comms officer explicitly set is_public AND that have been sent.
+    # This makes public exposure a conscious, auditable act, not an
+    # inference from an audience scope that never meant "public".
+    is_public = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -69,7 +77,10 @@ class Announcement(TimeStampedModel):
 
     class Meta:
         ordering = ("-created_at",)
-        indexes = [models.Index(fields=["status", "created_at"])]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["is_public", "status"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.title} [{self.status}]"

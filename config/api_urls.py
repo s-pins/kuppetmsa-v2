@@ -46,6 +46,10 @@ urlpatterns = [
         "communications/",
         include("apps.communications.api_urls", namespace="communications"),
     ),
+    path(
+        "public/",
+        include("apps.public_site.api_urls", namespace="public_site"),
+    ),
     # OpenAPI schema + UIs — all gated to officers.
     path("schema/", OfficerGatedSchemaView.as_view(), name="schema"),
     path("docs/", OfficerGatedSwaggerView.as_view(url_name="api_v1:schema"), name="swagger"),
