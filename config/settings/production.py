@@ -13,9 +13,14 @@ DEBUG = False
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DJANGO_DB_NAME"),
-        "USER": config("DJANGO_DB_USER"),
-        "PASSWORD": config("DJANGO_DB_PASSWORD"),
+        # Empty defaults so settings IMPORT for collectstatic / check
+        # before the DB is provisioned. Any command that actually
+        # touches the DB (migrate, runserver) will fail clearly on
+        # connection if these are unset — that is the correct, visible
+        # failure, unlike an opaque import-time crash.
+        "NAME": config("DJANGO_DB_NAME", default=""),
+        "USER": config("DJANGO_DB_USER", default=""),
+        "PASSWORD": config("DJANGO_DB_PASSWORD", default=""),
         "HOST": config("DJANGO_DB_HOST", default="localhost"),
         "PORT": config("DJANGO_DB_PORT", default="5432"),
         "CONN_MAX_AGE": 60,
@@ -53,12 +58,23 @@ CSRF_TRUSTED_ORIGINS = config(
 # Email (real SMTP)
 # ---------------------------------------------------------------------------
 
+# Email (real SMTP).
+# These have placeholder defaults so production settings can be IMPORTED
+# for collectstatic / migrate / check_deploy before SMTP is wired. They
+# are intentionally non-functional defaults — `check_deploy` FAILs if
+# email is still unconfigured, and email verification will visibly not
+# work until real values are set. This trades an opaque import-time
+# UndefinedValueError for a clear, actionable check.
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("DJANGO_EMAIL_HOST")
+EMAIL_HOST = config("DJANGO_EMAIL_HOST", default="")
 EMAIL_PORT = config("DJANGO_EMAIL_PORT", default=587, cast=int)
-EMAIL_HOST_USER = config("DJANGO_EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("DJANGO_EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = config("DJANGO_EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("DJANGO_EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = config("DJANGO_EMAIL_USE_TLS", default=True, cast=bool)
+DEFAULT_FROM_EMAIL = config(
+    "DJANGO_DEFAULT_FROM_EMAIL",
+    default="noreply@kuppetmsa.co.ke",
+)
 
 # ---------------------------------------------------------------------------
 # Sentry

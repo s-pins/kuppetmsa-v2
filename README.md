@@ -10,22 +10,56 @@ Post Primary Education Teachers).
 
 ## Project status
 
-**Phase 0 — Foundation complete.** This repo currently ships:
+**Complete — all build phases (0–11) delivered.** This is the full
+functional system, ~12.5k lines, 220 automated tests, CI-green.
 
-- Django 5.2 project with split settings (development / production)
-- Custom email-login `User` model with role + capability flags
-- `apps/core/constants.py` — single source of truth for roles and groups
-- `apps/core/permissions.py` — DRF permission classes built from constants
-- `apps/core/mixins.py` — same checks for server-rendered views
-- `apps/core/schema.py` — drf-spectacular hook that strips discipline endpoints from the schema for unauthorized callers
-- JWT auth via `djangorestframework-simplejwt` with blacklist on logout
-- OpenAPI schema + Swagger UI + Redoc, **all gated to officer roles**
-- CI: ruff lint + format check, pytest with coverage
-- Tests for every permission class and the JWT/Swagger flow
+What ships:
 
-The next phases are tracked in `docs/PLAN.md`. The permissions matrix that
-drives `core/constants.py` is in `docs/permissions.md` — read that before
-modifying any auth code.
+- **Foundation** — split settings, custom email-login `User` with
+  role + capability flags, constants-driven RBAC, JWT auth,
+  officer-gated OpenAPI.
+- **Members & auth** — django-allauth signup/verification/2FA, the
+  `members` app with race-safe membership IDs and CSV import.
+- **Finances** — bank accounts, contributions, expenses with a
+  model-enforced two-person rule, full audit trail, public
+  transparency aggregates.
+- **M-Pesa** — stub/live adapter (works credential-free until Daraja
+  is wired), C2B + STK, idempotent reconciliation.
+- **Events / projects / reports** — with budget-vs-actual flowing to
+  the public site.
+- **Member portal** — self-scoped dashboard, contributions, events.
+- **Welfare** — claim state machine, threshold gate, finance
+  integration on disbursement.
+- **Discipline** — field-level encryption at rest, 404 existence
+  non-disclosure, subject redaction (the most sensitive module).
+- **Communications** — targeted announcements, idempotent fan-out,
+  per-member inbox.
+- **Public site** — leak-defended unauthenticated surface.
+- **Operations** — idempotent `bootstrap`, the `check_deploy`
+  go-live gate, and the full runbook.
+
+### Before you deploy — read this first
+
+**`docs/DEPLOYMENT.md` is the deployment & operations runbook.** It is
+written for an operator who is not the original developer and contains
+the skymesh setup, the encryption-key custody procedure, the
+chairperson threshold sign-offs, and the go-live checklist. Do not
+deploy from this README alone.
+
+Three things require human decisions the code cannot make for you and
+are called out in the runbook:
+
+1. `DJANGO_FIELD_ENCRYPTION_KEY` must be generated, backed up offline,
+   and never rotated without a re-encryption migration — losing it
+   permanently destroys all disciplinary records.
+2. `LARGE_EXPENSE_THRESHOLD_KES` and
+   `WELFARE_AUTO_APPROVE_THRESHOLD_KES` are placeholder values until
+   the chairperson confirms them against branch regulations.
+3. The M-Pesa Paybill must be registered to KUPPET Mombasa, not to an
+   officer personally.
+
+`python manage.py check_deploy` audits the machine-checkable subset of
+the above and exits non-zero until the deployment is ready.
 
 ## Quick start
 
@@ -71,17 +105,34 @@ config/                  Django project (settings split, root URLconf, WSGI/ASGI
   urls.py                root URLconf
   api_urls.py            /api/v1/* namespace
 apps/
-  core/                  constants, permission classes, view mixins, schema hooks
-  accounts/              custom User model, JWT views, /me endpoint
+  core/                  constants, permissions, mixins, schema hooks, ops commands
+  accounts/              custom User, JWT, allauth integration, 2FA
+  members/               Member model, CSV import, officer console
+  finances/              bank accounts, contributions, expenses, two-person rule
+  mpesa/                 stub/live Daraja adapter, C2B/STK, reconciliation
+  events/ projects/ reports/   activities + budget-vs-actual
+  portal/                self-scoped member dashboard
+  welfare/               claim state machine + finance integration
+  discipline/            encrypted, 404-non-disclosure (most sensitive)
+  communications/        targeted announcements + member inbox
+  public_site/           leak-defended public surface
 docs/
   PLAN.md                the v2 plan & sprint map
   permissions.md         the binding permissions matrix
-  erd.md                 entity-relationship diagrams (3 sub-ERDs, mermaid)
+  erd.md                 entity-relationship diagrams (mermaid)
+  DEPLOYMENT.md          deployment & operations runbook — READ BEFORE DEPLOY
 requirements/
   base.txt               shared deps
   development.txt        dev-only (pytest, ruff, ipython)
-  production.txt         prod-only (sentry)
-templates/               server-rendered templates (populated in phase 1+)
+  production.txt         prod-only (sentry, psycopg)
+```
+
+Operational commands (see `docs/DEPLOYMENT.md`):
+
+```bash
+python manage.py bootstrap --admin-email ... --admin-password ...   # idempotent first-run
+python manage.py check_deploy                                       # go-live gate
+python manage.py import_members roster.csv [--dry-run]              # bulk member import
 ```
 
 ## Key conventions
@@ -92,25 +143,24 @@ templates/               server-rendered templates (populated in phase 1+)
 4. **Matrix wins.** If `docs/permissions.md` and the code disagree, the matrix is authoritative — the code gets fixed.
 5. **No secrets in code.** Everything goes through `decouple.config(...)`.
 
-## Phase 0 sign-off checklist
+## For a new maintainer
 
-Before moving to phase 1:
+Start here, in order:
 
-- [ ] `pytest` passes locally
-- [ ] `ruff check . && ruff format --check .` clean
-- [ ] Can create a superuser
-- [ ] Can obtain a JWT and call `/api/v1/accounts/me/`
-- [ ] Member account is denied at `/api/v1/docs/` (gets 403)
-- [ ] Officer account is admitted at `/api/v1/docs/`
-- [ ] `docs/permissions.md` reviewed and signed off by the chairperson
+1. `docs/PLAN.md` — what was built and why.
+2. `docs/permissions.md` — the binding RBAC matrix. **If the code and
+   this matrix disagree, the matrix is authoritative.**
+3. `docs/erd.md` — the data model (3 mermaid sub-ERDs).
+4. `docs/DEPLOYMENT.md` — how to run it on skymesh, and the
+   bus-factor section specifically written for you.
+5. Run `pytest` (expect ~220 passing) and
+   `ruff check . && ruff format --check .` (clean) to confirm a sane
+   working copy before changing anything.
 
-## Phase 1 next steps
-
-1. Wire `django-allauth` for member self-registration + email verification
-2. Add the `accounts:reauth` view (referenced by `RecentAuthRequiredMixin`)
-3. Add 2FA enrollment via `allauth.mfa`
-4. Build the `members` app: Member model, CRUD viewsets, CSV import
-5. Add the officer console skeleton (server-rendered with HTMX)
+The test suite is the safety net: every permission row in the matrix
+has a test, and every phase of the build caught at least one real bug
+through it. Trust a red test over your assumptions, and verify a
+surprising green or red against ground truth before acting on it.
 
 ## License
 

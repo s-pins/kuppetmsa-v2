@@ -85,6 +85,8 @@ class TestCheckDeploy:
         settings.DEBUG = False
         settings.CRYPTOGRAPHY_KEY = "a-distinct-key-not-the-secret-key"
         settings.ALLOWED_HOSTS = ["kuppetmsa.co.ke"]
+        settings.EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+        settings.EMAIL_HOST = "smtp.kuppetmsa.co.ke"
         User = get_user_model()
         User.objects.create_superuser(
             email="admin@kuppetmsa.co.ke",
@@ -96,10 +98,29 @@ class TestCheckDeploy:
         call_command("check_deploy", stdout=out)
         assert "All deployment checks passed" in out.getvalue()
 
+    def test_fails_when_smtp_selected_but_no_host(self, settings):
+        """New Phase 11 gate: SMTP backend with empty EMAIL_HOST means
+        no member can verify email or log in — must block go-live."""
+        settings.DEBUG = False
+        settings.CRYPTOGRAPHY_KEY = "a-distinct-key-not-the-secret-key"
+        settings.ALLOWED_HOSTS = ["kuppetmsa.co.ke"]
+        settings.EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+        settings.EMAIL_HOST = ""
+        User = get_user_model()
+        User.objects.create_superuser(
+            email="admin@kuppetmsa.co.ke",
+            password="StrongPass-12345",
+        )
+        BankAccount.objects.create(name="Main", paybill="600100", is_active=True)
+        with pytest.raises(SystemExit):
+            call_command("check_deploy", stdout=io.StringIO())
+
     def test_warns_but_passes_without_paybill(self, settings):
         settings.DEBUG = False
         settings.CRYPTOGRAPHY_KEY = "a-distinct-key-not-the-secret-key"
         settings.ALLOWED_HOSTS = ["kuppetmsa.co.ke"]
+        settings.EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+        settings.EMAIL_HOST = "smtp.kuppetmsa.co.ke"
         User = get_user_model()
         User.objects.create_superuser(
             email="admin@kuppetmsa.co.ke",

@@ -119,6 +119,31 @@ class Command(BaseCommand):
         else:
             self._line("PASS", "At least one admin account exists.")
 
+        # --- email configured -------------------------------------------
+        # Email verification is mandatory for member login (Phase 1):
+        # without working SMTP, no member can ever sign in. Production
+        # settings now import with blank email defaults so setup
+        # commands work; this check is what makes the missing config
+        # visible and actionable instead of an opaque import crash.
+        email_host = getattr(settings, "EMAIL_HOST", "")
+        uses_smtp = "smtp" in getattr(settings, "EMAIL_BACKEND", "")
+        if uses_smtp and not email_host:
+            self._line(
+                "FAIL",
+                "SMTP backend selected but EMAIL_HOST is empty. No "
+                "member could verify their email or log in. Set "
+                "DJANGO_EMAIL_HOST / USER / PASSWORD.",
+            )
+            fails += 1
+        elif uses_smtp:
+            self._line("PASS", f"SMTP email configured (host {email_host}).")
+        else:
+            self._line(
+                "WARN",
+                "Non-SMTP email backend — fine for staging, not production member onboarding.",
+            )
+            warns += 1
+
         # --- policy thresholds (human confirmation) ---------------------
         from apps.core import constants
 
