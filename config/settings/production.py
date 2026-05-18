@@ -50,7 +50,7 @@ SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_TRUSTED_ORIGINS = config(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    default="https://kuppetmsa.co.ke,https://www.kuppetmsa.co.ke",
+    default="https://kuppetmombasa.co.ke,https://www.kuppetmombasa.co.ke",
     cast=lambda s: [x.strip() for x in s.split(",") if x.strip()],
 )
 
@@ -73,7 +73,7 @@ EMAIL_HOST_PASSWORD = config("DJANGO_EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = config("DJANGO_EMAIL_USE_TLS", default=True, cast=bool)
 DEFAULT_FROM_EMAIL = config(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="noreply@kuppetmsa.co.ke",
+    default="noreply@kuppetmombasa.co.ke",
 )
 
 # ---------------------------------------------------------------------------

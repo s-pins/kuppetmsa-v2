@@ -1,0 +1,33 @@
+{% extends "public_site/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="hero" style="padding:60px 0 70px">
+  <div class="wrap">
+    <h1>Published <span class="hl">reports</span></h1>
+    <p>Audited accounts, AGM minutes and activity reports — downloadable.</p>
+  </div>
+</div>
+<section class="band">
+  <div class="wrap">
+    {% if reports %}
+    <table>
+      <thead><tr><th>Title</th><th>Category</th><th>Year</th><th></th></tr></thead>
+      <tbody>
+        {% for r in reports %}
+        <tr>
+          <td><strong>{{ r.title }}</strong>{% if r.description %}<br>
+            <span style="color:var(--muted);font-size:13px">{{ r.description }}</span>{% endif %}</td>
+          <td>{{ r.get_category_display }}</td>
+          <td>{{ r.year }}</td>
+          <td><a class="btn btn-primary" style="padding:8px 16px;font-size:13px"
+                 href="{{ r.file.url }}">Download</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No published reports yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

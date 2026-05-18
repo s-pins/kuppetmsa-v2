@@ -1,0 +1,95 @@
+{% extends "public_site/base.html" %}
+{% block title %}Transparency{% endblock %}
+{% block content %}
+<div class="hero" style="padding:60px 0 70px">
+  <div class="wrap">
+    <h1>Public <span class="hl">accounts</span></h1>
+    <p>Every figure here is computed from the branch's live records.
+       Nothing is summarised by hand.</p>
+  </div>
+</div>
+
+<section class="band">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat accent">
+        <div class="n">KES {{ contrib|floatformat:2 }}</div>
+        <div class="l">Total contributions</div>
+      </div>
+      <div class="stat">
+        <div class="n">KES {{ approved|floatformat:2 }}</div>
+        <div class="l">Approved expenses</div>
+      </div>
+      <div class="stat">
+        <div class="n">KES {{ net|floatformat:2 }}</div>
+        <div class="l">Net position</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Where contributions come from</div>
+    <h2 class="sec">By source</h2>
+    {% if by_source %}
+    <table>
+      <thead><tr><th>Source</th><th>Total (KES)</th></tr></thead>
+      <tbody>
+        {% for row in by_source %}
+        <tr><td>{{ row.source }}</td>
+            <td>{{ row.total|floatformat:2 }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No contributions recorded yet.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow">Over time</div>
+    <h2 class="sec">Monthly contributions</h2>
+    {% if monthly %}
+    <table>
+      <thead><tr><th>Month</th><th>Total (KES)</th></tr></thead>
+      <tbody>
+        {% for m in monthly %}
+        <tr><td>{{ m.month }}</td>
+            <td>{{ m.total|floatformat:2 }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No monthly data yet.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="band" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Spending in context</div>
+    <h2 class="sec">Project budgets</h2>
+    {% if projects %}
+    <table>
+      <thead><tr><th>Project</th><th>Budget</th><th>Spent</th>
+        <th>Status</th></tr></thead>
+      <tbody>
+        {% for p in projects %}
+        <tr>
+          <td>{{ p.name }}</td>
+          <td>KES {{ p.budget_kes|floatformat:0 }}</td>
+          <td>KES {{ p.spent_kes|floatformat:0 }}</td>
+          <td><span class="tag {{ p.status }}">{{ p.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No public projects yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "public_site/base.html" %}
+{% block title %}News{% endblock %}
+{% block content %}
+<div class="hero" style="padding:60px 0 70px">
+  <div class="wrap">
+    <h1>Branch <span class="hl">news</span></h1>
+    <p>Public announcements from KUPPET Mombasa.</p>
+  </div>
+</div>
+<section class="band">
+  <div class="wrap">
+    {% if news %}
+    <div class="cards">
+      {% for n in news %}
+      <div class="card">
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.body|linebreaksbr }}</p>
+        <div class="meta">{{ n.sent_at|date:"j M Y"|default:"Recently" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">No public announcements yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

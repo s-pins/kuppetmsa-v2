@@ -1,0 +1,32 @@
+{% extends "public_site/base.html" %}
+{% block title %}Projects{% endblock %}
+{% block content %}
+<div class="hero" style="padding:60px 0 70px">
+  <div class="wrap">
+    <h1>Branch <span class="hl">projects</span></h1>
+    <p>What the branch is building for members, with budgets and progress.</p>
+  </div>
+</div>
+<section class="band">
+  <div class="wrap">
+    {% if projects %}
+    <div class="cards">
+      {% for p in projects %}
+      <div class="card">
+        <span class="tag {{ p.status }}">{{ p.get_status_display }}</span>
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.description }}</p>
+        <div class="bar"><i style="width:{% widthratio p.spent_kes p.budget_kes|default:1 100 %}%"></i></div>
+        <div class="meta">KES {{ p.spent_kes|floatformat:0 }} spent of
+          KES {{ p.budget_kes|floatformat:0 }}{% if p.beneficiaries %} ·
+          {{ p.beneficiaries }}{% endif %}{% if p.started_on %} ·
+          since {{ p.started_on|date:"M Y" }}{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">No public projects published yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

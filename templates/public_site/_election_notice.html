@@ -1,0 +1,53 @@
+{# Self-contained election-notice modal. The ENTIRE campaign-frontend  #}
+{# footprint is this one file plus the ElectionNotice model. Removing  #}
+{# campaign mode = set ElectionNotice.is_active=False; this never       #}
+{# renders and the site is neutral. No other template references it.   #}
+<div class="en-overlay" id="enOverlay" role="dialog" aria-modal="true"
+     aria-labelledby="enTitle" hidden>
+  <div class="en-modal">
+    {% if notice.poster %}
+      <img src="{{ notice.poster.url }}" alt="{{ notice.title }}">
+    {% endif %}
+    <div class="en-body">
+      <div class="eyebrow">Branch Elections</div>
+      <h3 id="enTitle">{{ notice.title }}</h3>
+      <p>{{ notice.body|linebreaksbr }}</p>
+      <div class="en-actions">
+        {% if notice.learn_more_url %}
+          <a class="btn btn-primary" href="{{ notice.learn_more_url }}"
+             target="_blank" rel="noopener noreferrer">
+            {{ notice.learn_more_label|default:"Learn more" }}
+          </a>
+        {% endif %}
+        <button class="en-x" id="enDismiss" type="button">
+          Continue to site
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  // Show once per browser session; dismissable. No nagging, no
+  // localStorage persistence beyond the session — a returning visitor
+  // on a new session sees it again (intended for an election period).
+  var KEY = "kmsa_election_notice_dismissed";
+  var overlay = document.getElementById("enOverlay");
+  if(!overlay) return;
+  try {
+    if(sessionStorage.getItem(KEY) === "1"){ overlay.remove(); return; }
+  } catch(e){ /* sessionStorage blocked: just show once, no persistence */ }
+  overlay.hidden = false;
+  function dismiss(){
+    try { sessionStorage.setItem(KEY,"1"); } catch(e){}
+    overlay.remove();
+  }
+  document.getElementById("enDismiss").addEventListener("click", dismiss);
+  overlay.addEventListener("click", function(e){
+    if(e.target === overlay) dismiss();   // click backdrop to close
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && document.body.contains(overlay)) dismiss();
+  });
+})();
+</script>

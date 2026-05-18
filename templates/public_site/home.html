@@ -1,0 +1,95 @@
+{% extends "public_site/base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="hero">
+  <div class="wrap">
+    <h1>Your union, run in the <span class="hl">open</span>.</h1>
+    <p>KUPPET Mombasa publishes every shilling of member contributions,
+       every approved expense, every welfare disbursement and every
+       project — verifiable, in public, all the time.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="/transparency/">See the accounts</a>
+      <a class="btn btn-ghost" href="/projects/">View projects</a>
+    </div>
+  </div>
+</div>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow">At a glance</div>
+    <h2 class="sec">The numbers, live</h2>
+    <p class="lead">These figures are computed directly from the
+       branch's records — not a brochure, the actual ledger.</p>
+    <div class="stats">
+      <div class="stat accent">
+        <div class="n">KES {{ stats.contributions|floatformat:0 }}</div>
+        <div class="l">Total contributions</div>
+      </div>
+      <div class="stat">
+        <div class="n">KES {{ stats.expenses|floatformat:0 }}</div>
+        <div class="l">Approved expenses</div>
+      </div>
+      <div class="stat">
+        <div class="n">KES {{ stats.net|floatformat:0 }}</div>
+        <div class="l">Net position</div>
+      </div>
+      <div class="stat">
+        <div class="n">{{ stats.projects }}</div>
+        <div class="l">Public projects</div>
+      </div>
+      <div class="stat">
+        <div class="n">{{ stats.reports }}</div>
+        <div class="l">Published reports</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Recent work</div>
+    <h2 class="sec">Projects for members</h2>
+    <p class="lead">Branch projects with their budgets and what's been
+       spent so far.</p>
+    {% if recent_projects %}
+    <div class="cards">
+      {% for p in recent_projects %}
+      <div class="card">
+        <span class="tag {{ p.status }}">{{ p.get_status_display }}</span>
+        <h3>{{ p.name }}</h3>
+        <p>{{ p.description|truncatewords:24 }}</p>
+        <div class="bar"><i style="width:{% widthratio p.spent_kes p.budget_kes|default:1 100 %}%"></i></div>
+        <div class="meta">KES {{ p.spent_kes|floatformat:0 }} spent of
+          KES {{ p.budget_kes|floatformat:0 }}{% if p.beneficiaries %} ·
+          {{ p.beneficiaries }}{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <p style="margin-top:24px"><a href="/projects/">All projects →</a></p>
+    {% else %}
+    <div class="empty">No public projects published yet.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow">Announcements</div>
+    <h2 class="sec">Latest news</h2>
+    {% if recent_news %}
+    <div class="cards">
+      {% for n in recent_news %}
+      <div class="card">
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.body|truncatewords:30 }}</p>
+        <div class="meta">{{ n.sent_at|date:"j M Y"|default:"Recently" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <p style="margin-top:24px"><a href="/news/">All news →</a></p>
+    {% else %}
+    <div class="empty">No public announcements yet.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

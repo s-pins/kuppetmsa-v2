@@ -300,7 +300,7 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "CONTACT": {
         "name": "KUPPET Mombasa",
-        "url": "https://kuppetmsa.co.ke",
+        "url": "https://kuppetmombasa.co.ke",
     },
 }
 
@@ -318,7 +318,7 @@ CORS_ALLOW_CREDENTIALS = True
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = config(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="noreply@kuppetmsa.co.ke",
+    default="noreply@kuppetmombasa.co.ke",
 )
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 

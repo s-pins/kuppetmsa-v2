@@ -2,7 +2,7 @@
 
 This document is the single source of truth for deploying and operating
 the KUPPET Mombasa management system on the skymesh.co.ke host under
-`kuppetmsa.co.ke`. It is written to be followed by a competent operator
+`kuppetmombasa.co.ke`. It is written to be followed by a competent operator
 who is *not* the original developer — that is deliberate (see
 §7, Bus-factor).
 
@@ -30,8 +30,8 @@ build — verify each on the actual box and fill in the blanks.**
 | PostgreSQL | 14+ | `________` |
 | Root / sudo access | yes | `________` |
 | Outbound HTTPS to Safaricom | yes (for live M-Pesa) | `________` |
-| SMTP relay for `noreply@kuppetmsa.co.ke` | yes (email verification) | `________` |
-| TLS certificate for `kuppetmsa.co.ke` | yes | `________` |
+| SMTP relay for `noreply@kuppetmombasa.co.ke` | yes (email verification) | `________` |
+| TLS certificate for `kuppetmombasa.co.ke` | yes | `________` |
 
 If any cell is unknown, resolve it before go-live — several have no
 workaround (e.g. no SMTP means no member can verify their email and
@@ -64,7 +64,7 @@ python manage.py collectstatic --noinput
 
 # 5. Bootstrap (idempotent — safe to re-run)
 python manage.py bootstrap \
-    --admin-email it.admin@kuppetmsa.co.ke \
+    --admin-email it.admin@kuppetmombasa.co.ke \
     --admin-password '<strong value from the branch password manager>' \
     --bank-name 'KUPPET Mombasa Main Account' \
     --paybill <branch paybill, or omit until registered>
@@ -167,7 +167,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-nginx terminates TLS for `kuppetmsa.co.ke` and proxies to
+nginx terminates TLS for `kuppetmombasa.co.ke` and proxies to
 `127.0.0.1:8000`. The M-Pesa webhook paths
 (`/api/v1/mpesa/validate/`, `/confirm/`, `/callback/`) should
 additionally be IP-allowlisted to Safaricom at the nginx layer — the

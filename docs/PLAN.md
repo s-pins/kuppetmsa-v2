@@ -1,7 +1,7 @@
 # KUPPET MSA v2 — Plan, Architecture & Sprint Map
 
 **Project:** Mombasa County KUPPET management system
-**Domain:** kuppetmsa.co.ke (hosted on skymesh.co.ke cloud)
+**Domain:** kuppetmombasa.co.ke (hosted on skymesh.co.ke cloud)
 **Maintainer:** sole developer (self-funded; client compensation deferred)
 **Document status:** v0.3 — DRF + JWT + Swagger added across all modules; ready for kickoff
 
@@ -34,7 +34,7 @@ The v1 prototype at `github.com/s-pins/kuppetmsa` is a useful sketch but has str
 - Events, projects, reports, gallery, manifesto modules (manifesto with versioning)
 - **Full REST API (DRF) across every module** with JWT authentication
 - **OpenAPI/Swagger documentation gated to officers**
-- Production deployment to kuppetmsa.co.ke with backups, monitoring, HTTPS
+- Production deployment to kuppetmombasa.co.ke with backups, monitoring, HTTPS
 - Officer training sessions + member tutorial pages
 
 **Explicit non-goals for v2 (deferred to v2.1 or later):**
@@ -275,9 +275,9 @@ MPESA_CONSUMER_KEY=
 MPESA_CONSUMER_SECRET=
 MPESA_PAYBILL=
 MPESA_PASSKEY=
-MPESA_CALLBACK_URL=https://kuppetmsa.co.ke/mpesa/callback/
-MPESA_VALIDATION_URL=https://kuppetmsa.co.ke/mpesa/validate/
-MPESA_CONFIRMATION_URL=https://kuppetmsa.co.ke/mpesa/confirm/
+MPESA_CALLBACK_URL=https://kuppetmombasa.co.ke/mpesa/callback/
+MPESA_VALIDATION_URL=https://kuppetmombasa.co.ke/mpesa/validate/
+MPESA_CONFIRMATION_URL=https://kuppetmombasa.co.ke/mpesa/confirm/
 MPESA_ENV=sandbox  # or 'production'
 ```
 
@@ -358,7 +358,7 @@ Every module exposes a REST API. The web UI consumes the same backend as any fut
 
 
 
-## 10. Deployment plan (skymesh.co.ke → kuppetmsa.co.ke)
+## 10. Deployment plan (skymesh.co.ke → kuppetmombasa.co.ke)
 
 Assuming skymesh provides an Ubuntu LTS VPS with root SSH:
 
@@ -369,7 +369,7 @@ Assuming skymesh provides an Ubuntu LTS VPS with root SSH:
 5. Postgres: dedicated DB and role, password from env
 6. Gunicorn: systemd service, 3 workers, unix socket
 7. nginx: reverse proxy, static via whitenoise (or nginx-served from `STATIC_ROOT`)
-8. SSL: certbot for `kuppetmsa.co.ke` and `www.kuppetmsa.co.ke`, auto-renew
+8. SSL: certbot for `kuppetmombasa.co.ke` and `www.kuppetmombasa.co.ke`, auto-renew
 9. Firewall: ufw allow 22, 80, 443 only
 10. Backups: nightly cron → `pg_dump | gzip | rclone copy` to off-VPS bucket
 11. Monitoring: Sentry DSN in env, UptimeRobot ping every 5 min
@@ -396,7 +396,7 @@ Conservative estimate at part-time pace (evenings + weekends) — compress propo
 | **10. Onboarding & training** | 3 | In-app tour (driver.js), public "how to use" page, officer-guide.md with screenshots, **API reference handout for any future developer** |
 | **11. API hardening** | 4 | Schema review, throttle tuning, Swagger gating verified, contract tests in CI, JWT blacklist on logout verified, recent-auth claim enforced on sensitive endpoints |
 | **12. Security hardening** | 3 | Pen-test pass (CSRF, XSS, IDOR, auth bypass, JWT replay, schema enumeration), perf tuning, a11y check, docs |
-| **13. Launch** | 2 | Deploy to kuppetmsa.co.ke, smoke test, training sessions with officers |
+| **13. Launch** | 2 | Deploy to kuppetmombasa.co.ke, smoke test, training sessions with officers |
 
 **Total: ~63 working days** (≈ 9–10 weeks full-time, ≈ 16–18 weeks part-time).
 
@@ -424,7 +424,7 @@ Answers locked in with the client. These shape the build:
 
 1. **Membership size** — scope assumes "every TSC-employed post-primary teacher in Mombasa County" as the addressable population. Realistically that's in the **low thousands** (~3,000–5,000 working figure; refine when the branch shares their registry). System sized for **10,000 members and 200 concurrent users** to give headroom.
 2. **M-Pesa** — branch-owned **Paybill**. Members pay to a single shortcode using their **membership ID as the account reference**. C2B confirmation webhook is the primary integration; STK Push is the secondary convenience flow from the member portal.
-3. **Email sender** — `noreply@kuppetmsa.co.ke` for v2. Sender domain configurable via env (`DEFAULT_FROM_EMAIL`) so it can change without a code release.
+3. **Email sender** — `noreply@kuppetmombasa.co.ke` for v2. Sender domain configurable via env (`DEFAULT_FROM_EMAIL`) so it can change without a code release.
 4. **Welfare module** — **in scope for v2**. See §4 addendum below.
 5. **Manifestos** — admins and designated staff (officers with a new `manifesto_editor` role flag, separate from constitutional roles) can edit; public reads only. Elections occur infrequently (typically every 5 years per KUPPET constitution), so we don't optimize for live election operations — but we do version manifestos so historical campaigns remain visible.
 6. **Disciplinary records** — **in scope for v2**. See §4 addendum below. This is the most security-sensitive module in the system and gets its own access tier.
