@@ -28,10 +28,18 @@
 </div>
 <script>
 (function(){
-  // Show once per browser session; dismissable. No nagging, no
-  // localStorage persistence beyond the session — a returning visitor
-  // on a new session sees it again (intended for an election period).
-  var KEY = "kmsa_election_notice_dismissed";
+  // Show once per session — UNLESS the notice changed.
+  //
+  // The dismiss key includes the notice's id + updated_at, so:
+  //   * dismissing this exact notice keeps it dismissed for the session
+  //   * publishing a NEW notice (different id) makes the key change ->
+  //     pops again
+  //   * editing the same notice (admin "Save") bumps updated_at -> key
+  //     changes -> pops again
+  // This is the smart middle ground: respects the user's dismissal of
+  // a specific message, but never silences an actually-new message.
+  var noticeVersion = "{{ notice.id }}_{{ notice.updated_at|date:'U' }}";
+  var KEY = "kmsa_election_notice_dismissed_" + noticeVersion;
   var overlay = document.getElementById("enOverlay");
   if(!overlay) return;
   try {

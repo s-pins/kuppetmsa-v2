@@ -14,6 +14,8 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "body",
+            "image",
+            "image_alt",
             "audience_scope",
             "audience_sub_county",
             "is_public",
@@ -39,6 +41,8 @@ class MyNotificationSerializer(serializers.ModelSerializer):
 
     title = serializers.CharField(source="announcement.title", read_only=True)
     body = serializers.CharField(source="announcement.body", read_only=True)
+    image = serializers.ImageField(source="announcement.image", read_only=True)
+    image_alt = serializers.CharField(source="announcement.image_alt", read_only=True)
     sent_at = serializers.DateTimeField(source="announcement.sent_at", read_only=True)
 
     class Meta:
@@ -47,6 +51,8 @@ class MyNotificationSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "body",
+            "image",
+            "image_alt",
             "sent_at",
             "is_read",
             "read_at",

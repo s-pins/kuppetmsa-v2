@@ -45,6 +45,24 @@ class AudienceScope(models.TextChoices):
 class Announcement(TimeStampedModel):
     title = models.CharField(max_length=200)
     body = models.TextField()
+    # Optional visual — registration guides, event posters, achievement
+    # graphics. Rendered above body on the news page when present.
+    # Left blank means a text-only announcement (the default), so this
+    # is purely additive and won't break existing comms.
+    image = models.ImageField(
+        upload_to="announcements/",
+        blank=True,
+        null=True,
+        help_text="Optional image shown above the body on the public "
+        "news page. Use for instructional graphics, event posters, etc.",
+    )
+    image_alt = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Accessibility description of the image. Leave blank "
+        "for decorative images; fill in for informative ones (e.g. a "
+        "step-by-step guide should describe what it shows).",
+    )
 
     audience_scope = models.CharField(
         max_length=16,

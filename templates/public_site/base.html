@@ -106,11 +106,26 @@
   .en-overlay{position:fixed;inset:0;background:rgba(6,26,48,.72);
     backdrop-filter:blur(4px);z-index:100;display:grid;place-items:center;padding:20px}
   .en-modal{background:#fff;border-radius:18px;max-width:560px;width:100%;
-    overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.4);
+    /* Cap the WHOLE modal to viewport height and scroll internally if
+       it overflows. Without this, a tall poster + body + buttons could
+       push the dismiss button below the fold on short screens — and
+       overflow:hidden on the container would just clip it. The body
+       remains visible; the user scrolls within the modal if needed. */
+    max-height:calc(100vh - 40px);overflow-y:auto;
+    box-shadow:0 24px 64px rgba(0,0,0,.4);
     animation:enpop .35s cubic-bezier(.2,.9,.3,1.2)}
   @keyframes enpop{from{opacity:0;transform:translateY(20px) scale(.96)}
     to{opacity:1;transform:none}}
-  .en-modal img{width:100%;display:block;max-height:420px;object-fit:cover}
+  .en-modal img{width:100%;display:block;
+    /* contain (not cover) so the WHOLE poster shows — cover crops,
+       which clipped the top/bottom of portrait posters. The cap leaves
+       proportional room for title/body/buttons below. The top
+       border-radius matches the modal so the image meets the rounded
+       corners cleanly (we can't rely on the modal's overflow:hidden
+       since we need overflow-y:auto for the internal-scroll fallback). */
+    max-height:min(55vh,560px);object-fit:contain;
+    background:var(--foam);
+    border-top-left-radius:18px;border-top-right-radius:18px}
   .en-body{padding:26px 28px 30px}
   .en-body .eyebrow{color:var(--sand)}
   .en-modal h3{font-size:1.5rem;margin:8px 0 10px}

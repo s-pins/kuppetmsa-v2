@@ -1,0 +1,45 @@
+{% load allauth %}
+{% comment %}
+OVERRIDE: allauth/elements/fields.html (plural)
+Upstream renders attrs.form.as_p. We iterate and wrap each field in
+our auth-field structure. Uses field.as_widget with attrs to inject
+our auth-input class without needing django-widget-tweaks as an
+extra dependency.
+attrs.unlabeled (bool): allauth uses placeholder-only on entrance
+pages. We keep visible labels for accessibility but visually-collapse
+them if requested.
+{% endcomment %}
+{% for field in attrs.form %}
+    <div class="auth-field auth-field-{{ field.field.widget.input_type|default:'text' }}{% if field.errors %} auth-field-invalid{% endif %}">
+        {% if field.field.widget.input_type == "checkbox" %}
+            <div class="auth-check">
+                {{ field.as_widget }}
+                <label for="{{ field.id_for_label }}" class="auth-check-label">
+                    {{ field.label }}
+                </label>
+            </div>
+        {% else %}
+            <label for="{{ field.id_for_label }}"
+                   class="auth-label{% if attrs.unlabeled %} auth-label-sr{% endif %}">
+                {{ field.label }}
+                {% if field.field.required %}<span class="auth-req" aria-hidden="true">*</span>{% endif %}
+            </label>
+            {{ field.as_widget }}
+        {% endif %}
+        {% if field.help_text %}
+            <span class="auth-helptext" id="{{ field.id_for_label }}_helptext">
+                {{ field.help_text|safe }}
+            </span>
+        {% endif %}
+        {% if field.errors %}
+            <ul class="errorlist">
+                {% for e in field.errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endfor %}
+{% if attrs.form.non_field_errors %}
+    <ul class="errorlist auth-nonfield">
+        {% for e in attrs.form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+{% endif %}

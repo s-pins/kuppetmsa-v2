@@ -10,13 +10,27 @@
 <section class="band">
   <div class="wrap">
     {% if news %}
-    <div class="cards">
+    <div class="news-feed">
       {% for n in news %}
-      <div class="card">
-        <h3>{{ n.title }}</h3>
-        <p>{{ n.body|linebreaksbr }}</p>
-        <div class="meta">{{ n.sent_at|date:"j M Y"|default:"Recently" }}</div>
-      </div>
+      <article class="news-item">
+        {% if n.image %}
+          {% comment %}
+          Visual announcement (e.g. registration guide, event poster).
+          Wrapped in a figure so the alt text is real accessibility,
+          not decoration.
+          {% endcomment %}
+          <figure class="news-figure">
+            <img src="{{ n.image.url }}"
+                 alt="{{ n.image_alt|default:n.title }}"
+                 loading="lazy">
+          </figure>
+        {% endif %}
+        <div class="news-body">
+          <h3>{{ n.title }}</h3>
+          <p>{{ n.body|linebreaksbr }}</p>
+          <div class="meta">{{ n.sent_at|date:"j M Y"|default:"Recently" }}</div>
+        </div>
+      </article>
       {% endfor %}
     </div>
     {% else %}
@@ -24,4 +38,25 @@
     {% endif %}
   </div>
 </section>
+
+<style>
+  /* News feed: stacked full-width items so visual announcements
+     (instructional graphics, posters) display at a readable size.
+     Text-only announcements still look right at this width. */
+  .news-feed{display:flex;flex-direction:column;gap:24px;
+    max-width:720px;margin:0 auto}
+  .news-item{background:#fff;border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;box-shadow:var(--shadow);
+    transition:.18s}
+  .news-item:hover{transform:translateY(-2px);
+    box-shadow:0 12px 32px rgba(10,37,64,.12)}
+  .news-figure{margin:0;background:var(--foam)}
+  .news-figure img{display:block;width:100%;height:auto;max-height:900px;
+    object-fit:contain}
+  .news-body{padding:24px 28px}
+  .news-body h3{font-size:1.25rem;margin-bottom:10px;color:var(--ocean)}
+  .news-body p{color:var(--ink);font-size:15px;line-height:1.65}
+  .news-body .meta{margin-top:14px;font-size:13px;color:var(--muted)}
+  @media(max-width:560px){.news-body{padding:20px 20px}}
+</style>
 {% endblock %}

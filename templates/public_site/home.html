@@ -14,6 +14,71 @@
   </div>
 </div>
 
+{% comment %}
+Latest strip — what makes refreshing the home page worthwhile.
+Mixes news, projects, and reports in one chronological feed at the
+fold. Each card is small and tappable; clicking jumps to the right
+section. Stays out of the way when nothing has happened.
+{% endcomment %}
+{% if latest %}
+<section class="band latest-band">
+  <div class="wrap">
+    <div class="latest-head">
+      <div class="eyebrow">Latest</div>
+      <h2 class="sec">What's new</h2>
+    </div>
+    <div class="latest-grid">
+      {% for item in latest %}
+      <a class="latest-card latest-{{ item.kind }}" href="{{ item.url }}">
+        {% if item.image %}
+        <div class="latest-thumb">
+          <img src="{{ item.image.url }}" alt="" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="latest-body">
+          <span class="latest-label">{{ item.label }}</span>
+          <h3>{{ item.title }}</h3>
+          {% if item.summary %}<p>{{ item.summary|truncatewords:18 }}</p>{% endif %}
+          {% if item.date %}<time>{{ item.date|date:"j M Y" }}</time>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<style>
+  .latest-band{background:linear-gradient(180deg,var(--foam),#fff);
+    border-bottom:1px solid var(--line);padding:48px 0 60px}
+  .latest-head{display:flex;justify-content:space-between;
+    align-items:baseline;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+  .latest-head h2{margin:6px 0 0}
+  .latest-grid{display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+  .latest-card{display:flex;flex-direction:column;background:#fff;
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:var(--shadow);text-decoration:none;color:inherit;
+    transition:.18s}
+  .latest-card:hover{transform:translateY(-3px);
+    box-shadow:0 14px 36px rgba(10,37,64,.14);border-color:var(--tide)}
+  .latest-thumb{aspect-ratio:16/10;background:var(--foam);overflow:hidden}
+  .latest-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .latest-body{padding:18px 20px 20px;display:flex;flex-direction:column;
+    gap:6px;flex:1}
+  .latest-label{display:inline-block;font-size:11px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--tide);
+    margin-bottom:2px}
+  .latest-news .latest-label{color:var(--sand)}
+  .latest-project .latest-label{color:var(--ok)}
+  .latest-report .latest-label{color:var(--tide)}
+  .latest-card h3{font-size:1.05rem;color:var(--ocean);line-height:1.3;
+    font-family:'Fraunces',serif}
+  .latest-card p{color:var(--muted);font-size:13.5px;line-height:1.5;
+    margin-top:2px}
+  .latest-card time{color:var(--muted);font-size:12px;margin-top:auto;
+    padding-top:8px}
+</style>
+{% endif %}
+
 <section class="band">
   <div class="wrap">
     <div class="eyebrow">At a glance</div>

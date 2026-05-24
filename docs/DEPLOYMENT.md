@@ -157,9 +157,9 @@ After=network.target postgresql.service
 
 [Service]
 User=kuppetmsa
-WorkingDirectory=/srv/kuppetmsa
-EnvironmentFile=/srv/kuppetmsa/.env
-ExecStart=/srv/kuppetmsa/.venv/bin/gunicorn config.wsgi:application \
+WorkingDirectory=/srv/kuppetmombasa
+EnvironmentFile=/srv/kuppetmombasa/.env
+ExecStart=/srv/kuppetmombasa/.venv/bin/gunicorn config.wsgi:application \
     --bind 127.0.0.1:8000 --workers 3
 Restart=on-failure
 

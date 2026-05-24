@@ -1,0 +1,169 @@
+{% extends "public_site/base.html" %}
+{% load i18n %}
+{# ============================================================== #}
+{# OVERRIDE: allauth/layouts/base.html                            #}
+{# This single file is inherited by every allauth page (account/, #}
+{# mfa/, usersessions/, socialaccount/). Extending the public     #}
+{# site's base means the WHOLE member auth journey gets our       #}
+{# header, footer, palette and typography — no per-page overrides #}
+{# needed for chrome.                                              #}
+{# ============================================================== #}
+
+{% block title %}{% block head_title %}{% trans "Account" %}{% endblock %} — KUPPET Mombasa{% endblock %}
+
+{% block content %}
+<section class="band" style="min-height:calc(100vh - 220px);
+                             display:flex;align-items:flex-start;
+                             padding:48px 0">
+  <div class="wrap" style="width:100%">
+    <div class="auth-card">
+      {% if messages %}
+        <ul class="auth-messages">
+          {% for m in messages %}
+            <li class="auth-msg {{ m.tags }}">{{ m }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {# allauth pages drop their content into this block. The styled #}
+      {# element overrides (form, field, button, h1, p, alert) handle #}
+      {# the form rendering inside.                                    #}
+      {% block body %}
+        {% block content_inner %}{% endblock %}
+      {% endblock %}
+
+      {# For authenticated members, give a small footer-nav to the    #}
+      {# account-management routes so they aren't stranded after      #}
+      {# password change / email management.                          #}
+      {% if user.is_authenticated %}
+      <div class="auth-aside">
+        <strong style="color:var(--ink);display:block;margin-bottom:8px">
+          {% trans "Your account" %}
+        </strong>
+        <span style="display:inline-flex;gap:14px;flex-wrap:wrap">
+          {% url 'account_email' as u %}{% if u %}<a href="{{ u }}">{% trans "Emails" %}</a>{% endif %}
+          {% url 'account_change_password' as u %}{% if u %}<a href="{{ u }}">{% trans "Password" %}</a>{% endif %}
+          {% url 'mfa_index' as u %}{% if u %}<a href="{{ u }}">{% trans "Two-factor" %}</a>{% endif %}
+          {% url 'account_logout' as u %}{% if u %}<a href="{{ u }}">{% trans "Sign out" %}</a>{% endif %}
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+  /* All auth-related styling kept here so it travels with this file.
+     Targets the explicit classes emitted by the element overrides
+     (auth-h1, auth-p, auth-input, auth-btn, auth-field, etc.) — no
+     reliance on tag selectors which would be fragile if upstream
+     element markup changes. */
+  .auth-card{max-width:480px;margin:0 auto;background:#fff;
+    border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:40px}
+
+  /* typography */
+  .auth-h1{font-size:1.8rem;margin-bottom:12px;color:var(--ocean);
+    text-align:center;font-family:'Fraunces',Georgia,serif;
+    line-height:1.15;letter-spacing:-.01em;font-weight:600}
+  .auth-h2{font-size:1.3rem;margin:18px 0 10px;color:var(--ocean);
+    font-family:'Fraunces',Georgia,serif;font-weight:600}
+  .auth-p{color:var(--muted);font-size:14.5px;margin-bottom:12px;
+    line-height:1.55;text-align:center}
+  .auth-p a{color:var(--tide);font-weight:500}
+  .auth-p a:hover{text-decoration:underline}
+  .auth-hr{border:none;border-top:1px solid var(--line);
+    margin:24px 0 18px}
+
+  /* form layout */
+  .auth-form{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+
+  /* fields */
+  .auth-field{display:flex;flex-direction:column;gap:6px}
+  .auth-label{font-weight:600;font-size:14px;color:var(--ink);
+    display:flex;align-items:baseline;gap:4px}
+  .auth-label-sr{position:absolute;width:1px;height:1px;padding:0;
+    margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  .auth-req{color:#b13434;font-weight:700}
+  .auth-field input[type="text"],
+  .auth-field input[type="email"],
+  .auth-field input[type="password"],
+  .auth-field input[type="url"],
+  .auth-field input[type="number"],
+  .auth-field input[type="tel"],
+  .auth-field input:not([type]),
+  .auth-field textarea,
+  .auth-input{
+    width:100%;padding:12px 14px;border:1px solid var(--line);
+    border-radius:9px;font:inherit;font-size:15px;color:var(--ink);
+    background:#fff;transition:.15s;font-family:'Outfit',sans-serif;
+    box-sizing:border-box}
+  .auth-field input:focus,
+  .auth-field textarea:focus,
+  .auth-input:focus{outline:none;border-color:var(--tide);
+    box-shadow:0 0 0 3px rgba(13,110,140,.15)}
+  .auth-field-invalid input,
+  .auth-field-invalid textarea{border-color:#b13434}
+  .auth-textarea{min-height:96px;resize:vertical}
+  .auth-check{display:flex;align-items:center;gap:10px}
+  .auth-check input,.auth-check-input{width:auto !important;margin:0}
+  .auth-check-label{font-weight:400;font-size:14.5px;color:var(--ink)}
+  .auth-helptext{display:block;color:var(--muted);font-size:12.5px;
+    margin-top:4px;line-height:1.45}
+
+  /* upstream field errors come through {{ attrs.errors }} as a
+     standard Django <ul class="errorlist"> */
+  .auth-field ul.errorlist,
+  .auth-form ul.errorlist{list-style:none;color:#b13434;
+    font-size:13.5px;margin:0 0 4px;padding:0}
+  .auth-field ul.errorlist li,
+  .auth-form ul.errorlist li{padding:8px 12px;background:#fdecec;
+    border:1px solid #f5c8c8;border-radius:8px;margin-bottom:6px}
+
+  /* buttons */
+  .auth-btn{display:inline-block;padding:11px 22px;border-radius:10px;
+    font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;
+    border:1px solid transparent;text-align:center;transition:.15s;
+    font-family:'Outfit',sans-serif;text-decoration:none}
+  .auth-btn-primary{background:var(--ocean);color:#fff}
+  .auth-btn-primary:hover{background:var(--ocean-deep)}
+  .auth-btn-outline{background:transparent;color:var(--tide);
+    border-color:var(--line)}
+  .auth-btn-outline:hover{background:var(--foam);border-color:var(--tide)}
+  .auth-btn-secondary{background:var(--foam);color:var(--ink);
+    border-color:var(--line)}
+  .auth-btn-secondary:hover{background:#eef2f6}
+  .auth-btn-danger{background:#b13434;color:#fff}
+  .auth-btn-danger:hover{background:#902828}
+  .auth-btn-prominent{width:100%;padding:14px 24px;font-size:15px;
+    margin-top:6px}
+
+  /* alerts (used by allauth_alert template tag too) */
+  .auth-alert{padding:12px 16px;border-radius:9px;font-size:14.5px;
+    margin-bottom:14px;border:1px solid transparent}
+  .auth-alert-success{background:#e3f3ee;color:#10663f;border-color:#bce4d4}
+  .auth-alert-error{background:#fdecec;color:#a52b2b;border-color:#f5c8c8}
+  .auth-alert-info,.auth-alert-warning{background:var(--sand-soft);
+    color:#7a4c14;border-color:#f0d5a9}
+
+  /* django messages (separate from the alert element, rendered in
+     the layout above the body) */
+  .auth-messages{list-style:none;padding:0;margin:0 0 20px}
+  .auth-msg{padding:12px 16px;border-radius:9px;font-size:14.5px;
+    margin-bottom:8px;border:1px solid transparent}
+  .auth-msg.success{background:#e3f3ee;color:#10663f;border-color:#bce4d4}
+  .auth-msg.error{background:#fdecec;color:#a52b2b;border-color:#f5c8c8}
+  .auth-msg.info,.auth-msg.warning{background:var(--sand-soft);
+    color:#7a4c14;border-color:#f0d5a9}
+
+  /* signed-in footer nav (manage pages only) */
+  .auth-aside{text-align:center;margin-top:28px;padding-top:22px;
+    border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  .auth-aside a{color:var(--tide);font-weight:600;margin:0 2px}
+  .auth-aside a:hover{text-decoration:underline}
+
+  @media(max-width:520px){.auth-card{padding:28px 22px;margin:0 8px}}
+</style>
+
+{% block extra_body %}{% endblock %}
+{% endblock content %}

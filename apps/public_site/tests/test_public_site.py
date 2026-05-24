@@ -176,6 +176,53 @@ class TestNewsLeakPrevention:
         ):
             assert forbidden not in row
 
+    def test_announcement_image_appears_on_public_news(self, author):
+        """An instructional / poster announcement carries its image
+        and alt text to the public news payload."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # 1x1 valid PNG so ImageField accepts the upload in tests
+        png_bytes = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+            b"\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\xcf\xc0"
+            b"\x00\x00\x00\x03\x00\x01\x86\x14\x9b\xb0\x00\x00\x00"
+            b"\x00IEND\xaeB`\x82"
+        )
+        a = Announcement.objects.create(
+            title="How to switch to full membership",
+            body="Follow these steps.",
+            audience_scope=AudienceScope.ALL_MEMBERS,
+            created_by=author,
+            is_public=True,
+            image=SimpleUploadedFile("guide.png", png_bytes, content_type="image/png"),
+            image_alt="Step-by-step T-Pay membership switch",
+        )
+        a.status = AnnouncementStatus.SENT
+        a.save(update_fields=["status"])
+
+        row = APIClient().get(NEWS).data["results"][0]
+        # Image URL and alt are present on the public payload.
+        assert row.get("image"), "image url missing on public news"
+        assert "guide" in row["image"]
+        assert row["image_alt"] == "Step-by-step T-Pay membership switch"
+
+    def test_text_only_announcement_has_null_image(self, author):
+        """A text announcement (no image uploaded) returns a null image
+        field on the public payload — the absence of an image is itself
+        information for clients deciding whether to render a figure."""
+        a = Announcement.objects.create(
+            title="Plain text notice",
+            body="Just words.",
+            audience_scope=AudienceScope.ALL_MEMBERS,
+            created_by=author,
+            is_public=True,
+        )
+        a.status = AnnouncementStatus.SENT
+        a.save(update_fields=["status"])
+        row = APIClient().get(NEWS).data["results"][0]
+        assert row.get("image") in (None, "")
+
 
 class TestNoMemberPIIAnywhere:
     def test_member_data_never_on_public_surface(self, author):
@@ -216,3 +263,91 @@ class TestOverviewComposition:
         assert "Pub" in proj_names
         assert "Hidden" not in proj_names
         assert any(n["title"] == "Public news" for n in data["recent_news"])
+
+
+class TestHomeLatestStrip:
+    """The home page's Latest strip uses round-robin merge so a noisier
+    source can't crowd out the others. This is what makes refreshing
+    the home page reward the visitor with fresh content of every kind."""
+
+    def test_round_robin_guarantees_mix(self, author):
+        from apps.public_site.models import ElectionNotice
+
+        # Suppress the modal for this test — we just want home content.
+        ElectionNotice.objects.all().delete()
+
+        # 6 reports + 6 projects all created AFTER 6 news, so a naive
+        # date-sort would put zero news in the top 6.
+        for i in range(6):
+            a = Announcement.objects.create(
+                title=f"News {i}",
+                body="x",
+                audience_scope=AudienceScope.ALL_MEMBERS,
+                created_by=author,
+                is_public=True,
+            )
+            a.status = AnnouncementStatus.SENT
+            a.save(update_fields=["status"])
+        for i in range(6):
+            Project.objects.create(
+                name=f"Project {i}",
+                slug=f"p{i}",
+                budget_kes=Decimal("1"),
+                is_public=True,
+            )
+        for i in range(6):
+            Report.objects.create(
+                title=f"Report {i}",
+                year=2026,
+                file=_pdf(f"r{i}.pdf"),
+                uploaded_by=author,
+                is_published=True,
+            )
+
+        resp = APIClient().get("/")
+        assert resp.status_code == 200
+        body = resp.content.decode()
+        # All three kinds must appear in the Latest strip. Use the
+        # latest-grid container as the anchor (less brittle than the
+        # outer section's class string, which is "band latest-band").
+        import re
+
+        m = re.search(r'latest-grid".*?</section>', body, re.S)
+        assert m, "latest strip not found in rendered home"
+        strip = m.group(0)
+        assert 'class="latest-label">News' in strip, "no News in Latest"
+        assert 'class="latest-label">Project' in strip, "no Project in Latest"
+        assert 'class="latest-label">Report' in strip, "no Report in Latest"
+
+
+class TestElectionNoticeVersionedDismiss:
+    """The modal's session-dismiss key is built from notice.id +
+    updated_at, so editing the notice invalidates prior dismissals.
+    A user who dismissed v1 will see v2 pop on next page load."""
+
+    def test_version_changes_on_edit(self, author):
+        from apps.public_site.models import ElectionNotice
+
+        n = ElectionNotice.objects.create(title="v1", body="b", is_active=True)
+        body1 = APIClient().get("/").content.decode()
+        import re
+
+        v1 = re.search(r'var noticeVersion = "([^"]+)"', body1)
+        assert v1, "noticeVersion missing on render"
+        v1_key = v1.group(1)
+
+        # Editing the notice bumps updated_at (model has auto_now=True).
+        import time
+
+        time.sleep(1.1)
+        n.title = "v2"
+        n.save()
+
+        body2 = APIClient().get("/").content.decode()
+        v2 = re.search(r'var noticeVersion = "([^"]+)"', body2)
+        assert v2
+        v2_key = v2.group(1)
+        assert v1_key != v2_key, (
+            "noticeVersion should change after edit so a dismissed "
+            "key is invalidated and the modal re-pops"
+        )

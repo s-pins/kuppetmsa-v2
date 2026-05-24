@@ -1,0 +1,88 @@
+{% extends "public_site/base.html" %}
+{% comment %}
+Shared base for every allauth page (login, signup, password reset,
+verification, etc.). Inherits the full public_site design system —
+header, footer, palette, typography — so the member journey doesn't
+drop into unstyled allauth defaults the moment someone clicks "Member
+Login". Each concrete page (account/login.html etc.) extends this and
+only fills in {% block auth_title %} and {% block auth_body %}.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% block auth_title %}{% trans "Account" %}{% endblock %}{% endblock %}
+
+{% block content %}
+<section class="band" style="min-height:calc(100vh - 220px);display:flex;align-items:center">
+  <div class="wrap" style="width:100%">
+    <div class="auth-card">
+      <div class="auth-head">
+        <h1 class="display">{% block auth_heading %}{{ block.super|default:"Account" }}{% endblock %}</h1>
+        {% block auth_lead %}{% endblock %}
+      </div>
+      {% if messages %}
+        <ul class="auth-messages">
+          {% for m in messages %}
+            <li class="auth-msg {{ m.tags }}">{{ m }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <div class="auth-body">
+        {% block auth_body %}{% endblock %}
+      </div>
+      {% block auth_aside %}{% endblock %}
+    </div>
+  </div>
+</section>
+<style>
+  /* auth shared styles — kept here so every account/*.html override
+     is minimal and consistent. Same palette/type as public base. */
+  .auth-card{max-width:480px;margin:0 auto;background:#fff;
+    border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:40px;}
+  .auth-head{margin-bottom:24px;text-align:center}
+  .auth-head h1{font-size:1.8rem;margin-bottom:8px;color:var(--ocean)}
+  .auth-head .lead{color:var(--muted);font-size:15px}
+  .auth-body form{display:flex;flex-direction:column;gap:18px}
+  .auth-body label{display:block;font-weight:600;font-size:14px;
+    color:var(--ink);margin-bottom:6px}
+  .auth-body input[type="text"],
+  .auth-body input[type="email"],
+  .auth-body input[type="password"],
+  .auth-body input[type="url"]{
+    width:100%;padding:12px 14px;border:1px solid var(--line);
+    border-radius:9px;font:inherit;font-size:15px;color:var(--ink);
+    background:#fff;transition:.15s;font-family:'Outfit',sans-serif}
+  .auth-body input:focus{outline:none;border-color:var(--tide);
+    box-shadow:0 0 0 3px rgba(13,110,140,.15)}
+  .auth-body input[type="checkbox"]{width:auto;margin-right:8px}
+  .auth-body .helptext{display:block;color:var(--muted);
+    font-size:13px;margin-top:6px}
+  .auth-body ul.errorlist{list-style:none;color:#b13434;
+    font-size:13.5px;margin-top:6px;padding:0}
+  .auth-body .field-row{display:flex;flex-direction:column;gap:0}
+  .auth-body button[type="submit"],
+  .auth-body input[type="submit"]{
+    background:var(--ocean);color:#fff;border:none;padding:13px 24px;
+    border-radius:10px;font:inherit;font-size:15px;font-weight:600;
+    cursor:pointer;transition:.15s;margin-top:8px;font-family:'Outfit',sans-serif}
+  .auth-body button[type="submit"]:hover,
+  .auth-body input[type="submit"]:hover{background:var(--ocean-deep)}
+  .auth-body .btn-secondary{background:transparent;color:var(--tide);
+    border:1px solid var(--line)}
+  .auth-body .btn-secondary:hover{background:var(--foam)}
+  .auth-aside,.auth-aside-block{text-align:center;margin-top:24px;
+    padding-top:24px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:14.5px}
+  .auth-aside a,.auth-aside-block a{color:var(--tide);font-weight:600}
+  .auth-messages{list-style:none;padding:0;margin:0 0 20px}
+  .auth-msg{padding:12px 16px;border-radius:9px;font-size:14.5px;
+    margin-bottom:8px}
+  .auth-msg.success{background:#e3f3ee;color:var(--ok);
+    border:1px solid #bce4d4}
+  .auth-msg.error{background:#fdecec;color:#b13434;
+    border:1px solid #f5c8c8}
+  .auth-msg.info,.auth-msg.warning{background:var(--sand-soft);
+    color:#7a4c14;border:1px solid #f0d5a9}
+  .auth-card .nonfield{color:#b13434;font-size:14px;margin-bottom:12px}
+  @media(max-width:520px){.auth-card{padding:28px 22px;margin:0 8px}}
+</style>
+{% endblock %}

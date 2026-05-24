@@ -1,0 +1,5 @@
+{% load allauth %}
+{# OVERRIDE: alert. attrs.level can be: error, success, warning, info #}
+<div class="auth-alert auth-alert-{{ attrs.level|default:'info' }}" role="alert">
+    {% slot message %}{% endslot %}
+</div>

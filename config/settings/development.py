@@ -21,3 +21,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Allow django-debug-toolbar if installed locally; optional.
 INTERNAL_IPS = ["127.0.0.1"]
+
+# Development ALWAYS uses a writable, project-local media dir, regardless
+# of what DJANGO_MEDIA_ROOT may be set to in a copied-from-prod .env.
+# This prevents the "PermissionError: /var/www/..." trap when running
+# locally. Production keeps its own MEDIA_ROOT from base.py/.env.
+MEDIA_ROOT = BASE_DIR / "media"

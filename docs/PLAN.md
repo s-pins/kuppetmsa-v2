@@ -364,7 +364,7 @@ Assuming skymesh provides an Ubuntu LTS VPS with root SSH:
 
 1. Provision: Ubuntu 24.04, 2 vCPU / 4GB RAM minimum, 40GB SSD
 2. System packages: nginx, postgresql-16, python3.12, redis-server (optional), certbot, ufw, fail2ban
-3. App user: non-root `kuppet` user, app at `/var/www/kuppetmsa/`
+3. App user: non-root `kuppet` user, app at `/srv/kuppetmombasa/`
 4. Python: venv per release, `pip install -r requirements.txt`
 5. Postgres: dedicated DB and role, password from env
 6. Gunicorn: systemd service, 3 workers, unix socket

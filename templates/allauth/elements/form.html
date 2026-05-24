@@ -1,0 +1,15 @@
+{% load allauth %}
+{# OVERRIDE: allauth/elements/form.html — adds a class hook so our    #}
+{# CSS can target auth forms. Same attrs contract as upstream         #}
+{# (attrs.method, attrs.action, attrs.id, attrs.tags).                 #}
+{# NOTE: csrf_token is NOT added here — every account/*.html page     #}
+{# already includes it inside the body slot. A second one here would  #}
+{# render two CSRF tokens per form, which is sloppy.                  #}
+<form method="{{ attrs.method }}"
+      action="{{ attrs.action }}"
+      {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+      class="auth-form"
+      novalidate>
+    {% slot body %}{% endslot %}
+    {% slot actions %}{% endslot %}
+</form>

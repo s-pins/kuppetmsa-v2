@@ -48,7 +48,9 @@ class PublicReportSerializer(serializers.ModelSerializer):
 class PublicAnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
-        # Title/body/date only. No created_by, no audience spec, no
-        # recipient_count — none of the operational metadata.
-        fields = ["title", "body", "sent_at"]
+        # Title/body/image/date only. Image is OPT-IN per the Phase 9
+        # allowlist pattern — added consciously because instructional
+        # graphics are content the public should see. No created_by, no
+        # audience spec, no recipient_count.
+        fields = ["title", "body", "image", "image_alt", "sent_at"]
         read_only_fields = fields

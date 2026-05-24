@@ -68,6 +68,75 @@ class HomeView(_PublicContextMixin, TemplateView):
         ctx["recent_news"] = Announcement.objects.filter(
             is_public=True, status=AnnouncementStatus.SENT
         ).order_by("-sent_at")[:3]
+
+        # Unified "Latest" feed — what makes refreshing the home page
+        # rewarding. Each entry is normalised to a small dict so the
+        # template renders the strip uniformly regardless of source.
+        #
+        # Algorithm: ROUND-ROBIN merge. Take the freshest item from
+        # each source in turn until we have 6. A naive global sort by
+        # date lets a noisier source crowd out the others (seeding
+        # reports right after news leaves news with later timestamps
+        # and buries it). Per-source cap then sort has the SAME
+        # problem — capping only limits, it doesn't guarantee
+        # inclusion. Round-robin guarantees mix: one of each, then
+        # another of each, until the strip is full.
+        from itertools import zip_longest
+
+        def _norm(qs, kind, label, url, date_field):
+            out = []
+            for obj in qs[:6]:
+                out.append(
+                    {
+                        "kind": kind,
+                        "label": label,
+                        "title": getattr(obj, "title", None) or obj.name,
+                        "summary": getattr(obj, "body", None) or getattr(obj, "description", ""),
+                        "url": url,
+                        "date": getattr(obj, date_field),
+                        "image": getattr(obj, "image", None),
+                    }
+                )
+            return out
+
+        news_items = _norm(
+            Announcement.objects.filter(is_public=True, status=AnnouncementStatus.SENT).order_by(
+                "-sent_at"
+            ),
+            "news",
+            "News",
+            "/news/",
+            "sent_at",
+        )
+        # updated_at on projects so status changes (planned -> active
+        # -> completed) bubble a project up the feed.
+        project_items = _norm(
+            Project.objects.filter(is_public=True).order_by("-updated_at"),
+            "project",
+            "Project",
+            "/projects/",
+            "updated_at",
+        )
+        report_items = _norm(
+            Report.objects.filter(is_published=True).order_by("-created_at"),
+            "report",
+            "Report",
+            "/reports/",
+            "created_at",
+        )
+
+        # Round-robin: news first because a fresh announcement is most
+        # time-sensitive ("don't miss this"), then project, then report.
+        latest = []
+        for triple in zip_longest(news_items, project_items, report_items):
+            for item in triple:
+                if item is not None:
+                    latest.append(item)
+                    if len(latest) == 6:
+                        break
+            if len(latest) == 6:
+                break
+        ctx["latest"] = latest
         return ctx
 
 
