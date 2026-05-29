@@ -86,7 +86,6 @@ class AnnouncementAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ("announcement", "member", "is_read", "read_at")
