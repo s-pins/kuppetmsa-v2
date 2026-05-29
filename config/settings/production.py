@@ -65,7 +65,10 @@ CSRF_TRUSTED_ORIGINS = config(
 # email is still unconfigured, and email verification will visibly not
 # work until real values are set. This trades an opaque import-time
 # UndefinedValueError for a clear, actionable check.
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = config(
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.smtp.EmailBackend",
+)
 EMAIL_HOST = config("DJANGO_EMAIL_HOST", default="")
 EMAIL_PORT = config("DJANGO_EMAIL_PORT", default=587, cast=int)
 EMAIL_HOST_USER = config("DJANGO_EMAIL_HOST_USER", default="")
