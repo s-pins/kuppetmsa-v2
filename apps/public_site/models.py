@@ -10,7 +10,10 @@ uploaded image the client controls, never a hardcoded asset.
 To decommission at officialisation: set `is_active = False` (or delete
 the row). Nothing else in the system references campaign content; the
 public site simply stops rendering the modal. This file and its
-template are the complete footprint.
+template are the complete footprint. Fields cover the campaign
+content (title, body, poster, portrait), the campaign date/CTA
+(election_date, learn_more_url, learn_more_label), and the
+master switch (is_active).
 """
 
 from __future__ import annotations
@@ -33,11 +36,31 @@ class ElectionNotice(models.Model):
     body = models.TextField(
         help_text="Short message. Plain text; keep it brief and factual.",
     )
+    election_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Date of the branch election. Drives the countdown "
+        "widget on the public home page. Leave blank to hide the "
+        "countdown entirely.",
+    )
     poster = models.ImageField(
         upload_to="election_notices/",
         blank=True,
         null=True,
         help_text="Optional campaign poster image (client-supplied).",
+    )
+    campaign_portrait = models.ImageField(
+        upload_to="election_notices/",
+        blank=True,
+        null=True,
+        help_text="Optional candidate portrait shown alongside the body "
+        "text in the modal. Different visual role from poster.",
+    )
+    campaign_portrait_caption = models.CharField(
+        max_length=160,
+        blank=True,
+        help_text="Short caption under the portrait (e.g. name and "
+        "candidacy). Only shown if the portrait is set.",
     )
     learn_more_url = models.URLField(
         blank=True,
