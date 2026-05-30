@@ -23,6 +23,20 @@
     --ink:#1a1f2e; --muted:#5b6b7c; --line:#e6e8ef; --white:#fff;
     --ok:#1d8a5b; --shadow:0 1px 2px rgba(108,92,231,.08),0 8px 24px rgba(108,92,231,.10);
   }
+  /* manifesto banner — thin strip above the header, rendered only when
+     an ElectionNotice is active. Mirrors v1's pattern: campaign call-to-
+     action gets a permanent strip (not just the modal). Non-dismissable
+     by design — the modal handles dismiss; this is the always-on link. */
+  .mb-banner{background:var(--sand);color:var(--ink);
+    padding:10px 24px;font-size:14.5px;font-weight:500;text-align:center;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    flex-wrap:wrap;line-height:1.4}
+  .mb-banner b{font-weight:700}
+  .mb-banner .mb-cta{display:inline-block;background:var(--ocean);color:#fff;
+    padding:6px 14px;border-radius:6px;font-size:13.5px;font-weight:600;
+    text-decoration:none;transition:.15s}
+  .mb-banner .mb-cta:hover{background:var(--ocean-deep)}
+  @media(max-width:560px){.mb-banner{font-size:13.5px;padding:9px 16px;gap:10px}}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Outfit',sans-serif;color:var(--ink);background:var(--foam);
     line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -147,6 +161,21 @@
 </style>
 </head>
 <body>
+{% if election_notice %}
+<div class="mb-banner" role="region" aria-label="Election notice">
+  <span>📢 <b>{{ election_notice.title|truncatechars:60 }}</b></span>
+  {% if election_notice.learn_more_url %}
+    <a class="mb-cta" href="{{ election_notice.learn_more_url }}"
+       target="_blank" rel="noopener noreferrer">
+      {{ election_notice.learn_more_label|default:"Learn more" }}
+    </a>
+  {% else %}
+    <a class="mb-cta" href="#enOverlay" onclick="document.getElementById('enOverlay')?.removeAttribute('hidden'); return false;">
+      View
+    </a>
+  {% endif %}
+</div>
+{% endif %}
 <header>
   <div class="nav">
     <a class="brand" href="/">
