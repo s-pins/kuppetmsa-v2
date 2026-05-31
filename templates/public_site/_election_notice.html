@@ -11,6 +11,18 @@
     <div class="en-body">
       <div class="eyebrow">Branch Elections</div>
       <h3 id="enTitle">{{ notice.title }}</h3>
+      {% if notice.campaign_portrait %}
+        <div class="en-portrait">
+          <img src="{{ notice.campaign_portrait.url }}"
+               alt="{{ notice.campaign_portrait_caption|default:'Candidate portrait' }}">
+          {% if notice.campaign_portrait_caption %}
+            <div class="en-portrait-meta">
+              <b>The candidate</b>
+              {{ notice.campaign_portrait_caption }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
       <p>{{ notice.body|linebreaksbr }}</p>
       <div class="en-actions">
         {% if notice.learn_more_url %}

@@ -37,6 +37,27 @@
     text-decoration:none;transition:.15s}
   .mb-banner .mb-cta:hover{background:var(--ocean-deep)}
   @media(max-width:560px){.mb-banner{font-size:13.5px;padding:9px 16px;gap:10px}}
+  /* countdown widget — sits between hero and Latest on the home page.
+     Renders only when notice.election_date is set; hides itself once
+     the date has passed (final state: "Elections concluded"). */
+  .cd-wrap{background:#fff;padding:36px 0;border-bottom:1px solid var(--line)}
+  .cd-inner{max-width:1120px;margin:0 auto;padding:0 24px;text-align:center}
+  .cd-eyebrow{color:var(--tide);font-weight:600;font-size:13px;
+    letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+  .cd-title{font-family:'Fraunces',Georgia,serif;font-size:clamp(1.3rem,2.6vw,1.7rem);
+    font-weight:600;color:var(--ink);margin-bottom:20px}
+  .cd-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;max-width:520px;margin:0 auto}
+  .cd-cell{background:linear-gradient(180deg,var(--ocean),var(--ocean-deep));
+    color:#fff;padding:18px 8px;border-radius:12px;box-shadow:var(--shadow)}
+  .cd-cell .cd-n{font-family:'Fraunces',serif;font-size:clamp(1.7rem,4vw,2.4rem);
+    font-weight:700;line-height:1;color:var(--sand);display:block}
+  .cd-cell .cd-l{font-size:11.5px;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;margin-top:6px;opacity:.85;display:block}
+  .cd-done{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--ocean);
+    font-weight:600}
+  @media(max-width:560px){.cd-grid{gap:8px}.cd-cell{padding:14px 4px}
+    .cd-cell .cd-l{font-size:10.5px}}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Outfit',sans-serif;color:var(--ink);background:var(--foam);
     line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -149,6 +170,18 @@
     border-top-left-radius:18px;border-top-right-radius:18px}
   .en-body{padding:26px 28px 30px}
   .en-body .eyebrow{color:var(--sand)}
+  /* portrait card — smaller image inside the modal body, separate from
+     the hero poster. Sits left of the title/body text on wider screens,
+     stacks on narrow ones. */
+  .en-portrait{display:flex;gap:18px;margin:8px 0 16px;align-items:flex-start}
+  .en-portrait img{width:96px;height:128px;object-fit:cover;border-radius:12px;
+    flex:none;background:var(--foam);border:1px solid var(--line)}
+  .en-portrait .en-portrait-meta{font-size:13px;color:var(--muted);
+    line-height:1.45;padding-top:4px}
+  .en-portrait-meta b{color:var(--ink);display:block;font-weight:600;
+    font-size:14px;margin-bottom:2px}
+  @media(max-width:480px){.en-portrait{flex-direction:column;align-items:center;text-align:center}
+    .en-portrait img{width:128px;height:160px}}
   .en-modal h3{font-size:1.5rem;margin:8px 0 10px}
   .en-modal p{color:var(--muted);font-size:15px}
   .en-actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}

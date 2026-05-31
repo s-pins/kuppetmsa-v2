@@ -14,6 +14,55 @@
   </div>
 </div>
 
+{% if election_notice.election_date %}
+<section class="cd-wrap" aria-label="Election countdown">
+  <div class="cd-inner">
+    <div class="cd-eyebrow">Election Day</div>
+    <div class="cd-title">
+      {{ election_notice.election_date|date:"l, j F Y" }}
+    </div>
+    <div class="cd-grid" id="cdGrid"
+         data-target="{{ election_notice.election_date|date:'Y-m-d' }}">
+      <div class="cd-cell"><span class="cd-n" data-unit="d">—</span><span class="cd-l">Days</span></div>
+      <div class="cd-cell"><span class="cd-n" data-unit="h">—</span><span class="cd-l">Hours</span></div>
+      <div class="cd-cell"><span class="cd-n" data-unit="m">—</span><span class="cd-l">Mins</span></div>
+      <div class="cd-cell"><span class="cd-n" data-unit="s">—</span><span class="cd-l">Secs</span></div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var grid = document.getElementById('cdGrid');
+  if(!grid) return;
+  var target = new Date(grid.dataset.target + 'T00:00:00');
+  var cells = {
+    d: grid.querySelector('[data-unit="d"]'),
+    h: grid.querySelector('[data-unit="h"]'),
+    m: grid.querySelector('[data-unit="m"]'),
+    s: grid.querySelector('[data-unit="s"]'),
+  };
+  function tick(){
+    var now = new Date();
+    var diff = target - now;
+    if(diff <= 0){
+      grid.outerHTML = '<div class="cd-done">Elections concluded.</div>';
+      return;
+    }
+    var s = Math.floor(diff / 1000);
+    var d = Math.floor(s / 86400); s -= d * 86400;
+    var h = Math.floor(s / 3600); s -= h * 3600;
+    var m = Math.floor(s / 60); s -= m * 60;
+    cells.d.textContent = d;
+    cells.h.textContent = String(h).padStart(2,'0');
+    cells.m.textContent = String(m).padStart(2,'0');
+    cells.s.textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+{% endif %}
+
 {% comment %}
 Latest strip — what makes refreshing the home page worthwhile.
 Mixes news, projects, and reports in one chronological feed at the
